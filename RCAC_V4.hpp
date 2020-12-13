@@ -2,7 +2,8 @@
 #define _RCAC_new_HPP_
 
 #include "Eigen/Dense"
-#include "Eigen/Sparse"
+#include "Eigen/Core"
+// #include "Eigen/Sparse"
 // #include <iostream>
 
 
@@ -17,10 +18,11 @@ class RCAC
 {
     double P0;
     double lambda;
-    double N1;
+    int nf;
+    Eigen::MatrixXd filtNu;
 
 public:
-    RCAC( double, double, double);
+    RCAC( double, double, int, Eigen::MatrixXd);
     
     /**
          * Returns RCAC's computed value for the control. Must run oneStep at least once.
@@ -63,22 +65,30 @@ public:
     // void buildRegressor(Eigen::VectorXd &zIn);
 
     void init_RCAC();
-    void buildRegressor(double zk, double zk_int, double zk_diff);
-    void set_performance(double zk);
+    void set_RCAC_data(double , double);
+    void buildRegressor(double zkm1, double zkm1_int, double zkm1_diff);
+    void filter_data();
     void update_theta();
-    Eigen::VectorXd compute_uk(double zk, double zk_int, double zk_diff);
-    void shift_data();
+    Eigen::VectorXd compute_uk(double, double, double, double);
         
 protected:
     //RCAC Working variables
     Eigen::MatrixXd P;
     Eigen::VectorXd theta;
 
-    Eigen::VectorXd u_k, u_km1, u_km2, u_filt;
-    Eigen::VectorXd z_k, z_km1, z_filt;
-    Eigen::MatrixXd Phi_k, Phi_km1, Phi_km2, Phi_filt; 
+    Eigen::VectorXd u_k, u_km1, u_filt;
+    Eigen::VectorXd z_km1, z_filt;
+    Eigen::MatrixXd Phi_k, Phi_filt; 
+    
+    Eigen::MatrixXd ubar, Phibar;
+
+    Eigen::MatrixXd UbarBlock, PhibarBlock;
+
     Eigen::MatrixXd Gamma;
     Eigen::MatrixXd Idty_lz;
+
+    
+
     int kk = 1;
 };
 
