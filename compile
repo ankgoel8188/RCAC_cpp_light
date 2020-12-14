@@ -1,4 +1,4 @@
 clear
 #rm main.exe
-g++ -O3 main.cpp RCAC_V4.cpp -o main
+g++ -O3 main.cpp -o main
 ./main

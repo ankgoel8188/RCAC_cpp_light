@@ -26,7 +26,7 @@ int main()
     x << 1.0,
         1.0;
     //End time of the simulation
-    int kend = 22;
+    int kend = 27;
     //*************************************************
     matrix::Matrix<float, 1, 2> filtNu;
     filtNu(0,0) = 0;
