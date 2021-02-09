@@ -18,10 +18,11 @@ using namespace matrix;
  */
 class RCAC
 {
+    /*initilizes with these values*/
     float P0;
     float lambda;
     int nf;
-    matrix::Matrix<float, 1, 2> filtNu;
+    matrix::Matrix<float, 1, 2> filtNu; //Declaringa  matrix named filtNu
 
 public:
     
@@ -31,7 +32,8 @@ public:
          * Returns RCAC's computed value for the control. Must run oneStep at least once.
          */
     //Function getControl: Get the computed control input
-    float get_uk()
+    // uk is equation 30 in RCAC paper
+    float get_uk() //simple get
     {
         return u_k;
     };
@@ -66,7 +68,7 @@ public:
     };
 
     // void buildRegressor(Eigen::VectorXd &zIn);
-
+    //all archetypes defined later in on cpp
     void init_RCAC();
     void set_RCAC_data(double , double);
     void buildRegressor(double zkm1, double zkm1_int, double zkm1_diff);
@@ -74,7 +76,7 @@ public:
     void update_theta();
     float compute_uk(double, double, double, double);
         
-protected:
+protected: //only accessible by self and inheriting and parent classes 1 step below private
     //RCAC Working variables
     matrix::Matrix<float, 3,3> P;
     matrix::Matrix<float, 3,1> theta;

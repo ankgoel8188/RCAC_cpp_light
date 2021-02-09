@@ -6,43 +6,44 @@ using namespace std;
 RCAC::RCAC(double P0_val, double lambda_val, int nf_val, matrix::Matrix<float, 1, 2> filtNu_val)
 {
     P0 = P0_val;
-    lambda = lambda_val;
-    nf = nf_val;
-    filtNu = filtNu_val;
+    lambda = lambda_val; //forgetting factor
+    nf = nf_val; // determined based by trial and error
+    filtNu = filtNu_val; //check equatiosn 44 46
 }
 
-void RCAC::init_RCAC()
+void RCAC::init_RCAC() //Sets all to inital values (zero)
 {
-    P = eye<float, 3>() * P0;
-    theta.setZero();
+    P = eye<float, 3>() * P0; //controller coefficients based on previous state inputs
+    theta.setZero(); //Controller coeff vector
 
-    u_km1 = 0;
-    z_km1 = 0;
+    u_km1 = 0; // inputs u(k-1)
+    z_km1 = 0; // restrospective cost vairable z(k-1)
 
-    Phi_k.setZero();
+    Phi_k.setZero(); //regressor matrix (matrix of all previous inputs and states)
 
-    ubar.setZero();
-    Phibar.setZero();
+    ubar.setZero(); //buffers to collect previous values
+    Phibar.setZero(); //buffers to collect previous values
 
     Phi_filt.setZero();
 
     one_matrix = eye<float,1>();
 }
 
-void RCAC::set_RCAC_data(double zkm1, double ukm1)
+void RCAC::set_RCAC_data(double zkm1, double ukm1) //set values
 {
     z_km1 = zkm1;
     u_km1 = ukm1;
 }
 
-void RCAC::buildRegressor(double z, double z_int, double z_diff)
+void RCAC::buildRegressor(double z, double z_int, double z_diff) //creates phi matrix using the z?
 {
+    //This is a PID implementation NOT like the one seen in eq 31 in paper
     Phi_k(0, 0) = z;
     Phi_k(0, 1) = z_int;
     Phi_k(0, 2) = z_diff;
 }
 
-void RCAC::filter_data()
+void RCAC::filter_data() //something to improve 
 {
     for (int ii = nf-1; ii >0 ; ii--)
     {
