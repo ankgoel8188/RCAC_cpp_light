@@ -3,30 +3,17 @@
 
 // using namespace std;
 
-// RCAC::RCAC(float P0_val, float lambda_val, int nf_val, float N1_val)
-// {
-//     P0 = P0_val;
-//     lambda = lambda_val;
-//     nf = nf_val;
-// //     filtNu = filtNu_val;
-//     N1 = N1_val;
-// }
-
-void RCAC::set_RCAC_parameters(float P0_val, float lambda_val, int nf_val, float N1_val)
+RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val)
 {
     P0 = P0_val;
     lambda = lambda_val;
-    nf = nf_val;
-//     filtNu = filtNu_val;
-N1 = N1_val;
-}
+    N_nf = N_nf_val;
 
-void RCAC::init_RCAC()
-{
+    // Initialize interal RCAC variables
     P = eye<float, 3>() * P0;
     theta.setZero();
-    filtNu(0,0)=0;
-    filtNu(0,1)=N1;
+    filtNu.setZero();
+    filtNu(0,nf-1)=N_nf;
     u_km1 = 0;
     z_km1 = 0;
 
@@ -40,10 +27,10 @@ void RCAC::init_RCAC()
     one_matrix = eye<float, 1>();
 }
 
-void RCAC::set_RCAC_data(float zkm1, float ukm1)
+void RCAC::set_RCAC_data(float z_km1_val, float u_km1_val)
 {
-    z_km1 = zkm1;
-    u_km1 = ukm1;
+    z_km1 = z_km1_val;
+    u_km1 = u_km1_val;
 }
 
 void RCAC::buildRegressor(float z, float z_int, float z_diff)
@@ -72,14 +59,6 @@ void RCAC::filter_data()
     {
         Phibar(0, jj) = Phi_k(0, jj);
     }
-
-    // UbarBlock = ubar.block(0, 0, nf - 1, 1);
-    // ubar.block(1, 0, nf - 1, 1) = UbarBlock;
-    // ubar(0, 0) = u_km1(0, 0);
-
-    // PhibarBlock = Phibar.block(0, 0, nf, 3);
-    // Phibar.block(1, 0, nf, 3) = PhibarBlock;
-    // Phibar.block(0, 0, 1, 3) = Phi_k;
 
     z_filt = z_km1;
 
@@ -118,7 +97,6 @@ float RCAC::compute_uk(float z, float z_int, float z_diff, float u)
     update_theta();
     dummy = Phi_k * theta;
     u_k = dummy(0, 0);
-    // shift_data();
     kk = kk + 1;
     return u_k;
 }

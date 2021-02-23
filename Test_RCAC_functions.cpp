@@ -15,8 +15,8 @@ int main()
     filtNu(0,1) = 1;
 
     // RCAC myRCAC(5.0, 1.0, 2, filtNu);
-    RCAC myRCAC;
-    myRCAC.set_RCAC_parameters(1,1,2,3);
+    RCAC myRCAC(1,1,2);
+    // myRCAC.set_RCAC_parameters(1,1,2,3);
 
     myRCAC.init_RCAC();
     myRCAC.buildRegressor(0,0,0);
@@ -26,5 +26,6 @@ int main()
     myRCAC.compute_uk(0,0,0,0);
     // uout = myRCAC.compute_uk(z1, g1, zd1,u(0,0));
     std::cout << filtNu(0,0) << endl;
+    std::cout << filtNu(0,1) << endl;
 }
 #endif
