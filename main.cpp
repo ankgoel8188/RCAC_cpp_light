@@ -10,10 +10,10 @@ int main()
 {
     //**************Simulation Parameters***************
     //Initialize the plant
-    int lx = 2;
-    int lu = 1;
-    int ly = 1;
-    int lz = ly;
+    // int lx = 2;
+    // int lu = 1;
+    // int ly = 1;
+    // int lz = ly;
     matrix::Matrix<float, 2, 2> A;
     matrix::Matrix<float, 2, 1> B;
     matrix::Matrix<float, 1, 2> C;

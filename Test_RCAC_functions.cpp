@@ -18,7 +18,7 @@ int main()
     RCAC myRCAC(1,1,2);
     // myRCAC.set_RCAC_parameters(1,1,2,3);
 
-    myRCAC.init_RCAC();
+    //myRCAC.init_RCAC();
     myRCAC.buildRegressor(0,0,0);
     myRCAC.set_RCAC_data(1,2);
     myRCAC.filter_data();

@@ -29,15 +29,18 @@ public:
     void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
     void filter_data();
     void update_theta();
-    float compute_uk(float, float, float, float);
+    float compute_uk(float z, float z_int, float z_diff, float u);
 
 protected:
     const int nf = 2;
-    matrix::Matrix<float, 1, 2> filtNu;
+    matrix::Matrix<float, 1, 2> filtNu;         // 1st order filter. Gf = filtNu(0) + filtNu(1)/q
+                                                // In most cases, filtNu(0) = 0 and filtNu(1) = +-1
     
     //RCAC internal variables
     matrix::Matrix<float, 3, 3> P;
-    matrix::Matrix<float, 3, 1> theta;
+    matrix::Matrix<float, 3, 1> theta;          // Kp = theta(0,0)
+                                                // Ki = theta(1,0)
+                                                // Kd = theta(2,0)
 
     float u_k, u_km1, u_filt;
     float z_km1, z_filt;
