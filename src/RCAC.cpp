@@ -3,7 +3,8 @@
 
 // using namespace std;
 
-RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val)
+//RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val)
+void RCAC::init_RCAC(float P0_val, float lambda_val, float N_nf_val)
 {
     P0 = P0_val;
     lambda = lambda_val;

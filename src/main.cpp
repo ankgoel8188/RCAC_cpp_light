@@ -41,9 +41,9 @@ int main()
     //*************************************************
     
     // RCAC RCAC2;
-    RCAC myRCAC(5,1,1);
+    RCAC myRCAC;
     // myRCAC.set_RCAC_parameters(5,1,2,1);
-    // myRCAC.init_RCAC();
+    myRCAC.init_RCAC(5,1,2);
 
     // u = MatrixXd::Zero(lu, 1);
 

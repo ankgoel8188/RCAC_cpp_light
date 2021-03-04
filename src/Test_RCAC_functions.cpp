@@ -15,7 +15,7 @@ int main()
     filtNu(0,1) = 1;
 
     // RCAC myRCAC(5.0, 1.0, 2, filtNu);
-    RCAC myRCAC(1,1,2);
+    RCAC myRCAC;//(1,1,2);
     // myRCAC.set_RCAC_parameters(1,1,2,3);
 
     //myRCAC.init_RCAC();
