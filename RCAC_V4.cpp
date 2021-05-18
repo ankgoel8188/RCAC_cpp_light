@@ -3,10 +3,10 @@
 
 using namespace std;
 
-// RCAC::RCAC()
-// {
-
-// }
+RCAC::RCAC()
+{
+    RCAC(0, 0, 0, matrix::Matrix<float, 1, 2>());
+}
 
 RCAC::RCAC(double P0_val, double lambda_val, int nf_val, matrix::Matrix<float, 1, 2> filtNu_val) :
     P0(P0_val), lambda(lambda_val), nf(nf_val), filtNu(filtNu_val)

@@ -25,8 +25,8 @@ class RCAC
 
 public:
 
-    // RCAC();
-    RCAC( double, double, int, matrix::Matrix<float, 1,2>);
+    RCAC();
+    RCAC(double, double, int, matrix::Matrix<float, 1,2>);
 
     /**
          * Returns RCAC's computed value for the control. Must run oneStep at least once.
@@ -68,7 +68,6 @@ public:
 
     // void buildRegressor(Eigen::VectorXd &zIn);
 
-    void init_RCAC();
     void set_RCAC_data(double , double);
     void buildRegressor(double zkm1, double zkm1_int, double zkm1_diff);
     void filter_data();
@@ -94,6 +93,9 @@ protected:
     matrix::Matrix<float, 1,1> dummy;
 
     int kk = 1;
+
+private:
+    void init_RCAC();
 };
 
 
