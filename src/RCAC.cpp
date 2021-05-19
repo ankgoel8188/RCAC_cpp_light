@@ -3,13 +3,14 @@
 
 // using namespace std;
 
-//RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val)
-void RCAC::init_RCAC(float P0_val, float lambda_val, float N_nf_val)
+RCAC::RCAC()
 {
-    P0 = P0_val;
-    lambda = lambda_val;
-    N_nf = N_nf_val;
+    RCAC(0.1, 1.0, 1.0);
+}
 
+RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
+    P0(P0_val), lambda(lambda_val), N_nf(N_nf_val)
+{
     // Initialize interal RCAC variables
     P = eye<float, 3>() * P0;
     theta.setZero();

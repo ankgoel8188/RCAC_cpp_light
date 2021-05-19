@@ -17,8 +17,8 @@ class RCAC
     float N_nf;
 
 public:
-    //RCAC(float, float, float);
-    void init_RCAC(float, float, float);
+    RCAC();
+    RCAC(float P0_val, float lambda_val, float N_nf_val);
 
     int   getkk() {return kk;};
     float get_rcac_uk() {return u_k;};
