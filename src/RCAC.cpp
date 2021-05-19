@@ -8,6 +8,11 @@ RCAC::RCAC()
     RCAC(0.1, 1.0, 1.0);
 }
 
+RCAC::RCAC(float P0_val)
+{
+    RCAC(P0_val, 1.0, 1.0);
+}
+
 RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     P0(P0_val), lambda(lambda_val), N_nf(N_nf_val)
 {
@@ -27,6 +32,51 @@ RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     Phi_filt.setZero();
 
     one_matrix = eye<float, 1>();
+}
+
+RCAC::RCAC(const RCAC & obj)
+{
+    P0 = obj.P0;
+    filtNu = obj.filtNu;
+    P = obj.P;
+    theta = obj.theta;
+    u_k = obj.u_k;
+    u_km1 = obj.u_km1;
+    u_filt = obj.u_filt;
+    z_km1 = obj.z_km1;
+    z_filt = obj.z_filt;
+    Phi_k = obj.Phi_k;
+    Phi_filt = obj.Phi_filt;
+    ubar = obj.ubar;
+    Phibar = obj.Phibar;
+    PhibarBlock = obj.PhibarBlock;
+    Gamma = obj.Gamma;
+    Idty_lz = obj.Idty_lz;
+    one_matrix = obj.one_matrix;
+    dummy = obj.dummy;
+}
+
+RCAC& RCAC::operator=(const RCAC & obj)
+{
+    P0 = obj.P0;
+    filtNu = obj.filtNu;
+    P = obj.P;
+    theta = obj.theta;
+    u_k = obj.u_k;
+    u_km1 = obj.u_km1;
+    u_filt = obj.u_filt;
+    z_km1 = obj.z_km1;
+    z_filt = obj.z_filt;
+    Phi_k = obj.Phi_k;
+    Phi_filt = obj.Phi_filt;
+    ubar = obj.ubar;
+    Phibar = obj.Phibar;
+    PhibarBlock = obj.PhibarBlock;
+    Gamma = obj.Gamma;
+    Idty_lz = obj.Idty_lz;
+    one_matrix = obj.one_matrix;
+    dummy = obj.dummy;
+    return *this;
 }
 
 void RCAC::set_RCAC_data(float z_km1_val, float u_km1_val)

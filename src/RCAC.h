@@ -7,7 +7,7 @@ using namespace matrix;
 /**
  * The parent RCAC class. This class handles all the low level computation of RCAC
  * such as the filtering, coefficient updates, and keeping track of the regressors.
- * 
+ *
  * The notation here follows the JGCD 2019 implementation
  */
 class RCAC
@@ -18,7 +18,12 @@ class RCAC
 
 public:
     RCAC();
+    RCAC(float P0_val);
     RCAC(float P0_val, float lambda_val, float N_nf_val);
+
+    ~RCAC() = default;
+    RCAC(const RCAC & obj);
+    RCAC& operator=(const RCAC & obj);
 
     int   getkk() {return kk;};
     float get_rcac_uk() {return u_k;};
@@ -36,7 +41,7 @@ protected:
     const int nf = 2;
     matrix::Matrix<float, 1, 2> filtNu;         // 1st order filter. Gf = filtNu(0) + filtNu(1)/q
                                                 // In most cases, filtNu(0) = 0 and filtNu(1) = +-1
-    
+
     //RCAC internal variables
     matrix::Matrix<float, 3, 3> P;
     matrix::Matrix<float, 3, 1> theta;          // Kp = theta(0,0)
