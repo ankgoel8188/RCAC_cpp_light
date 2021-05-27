@@ -1,2 +1,0 @@
-/usr/bin/ar qc libRCAC.a  CMakeFiles/RCAC.dir/RCAC.cpp.o
-/usr/bin/ranlib libRCAC.a

@@ -1,17 +1,11 @@
 #include "RCAC.h"
-// #include <iostream>
+#include <iostream>
 
 // using namespace std;
 
-RCAC::RCAC()
-{
-    RCAC(0.1, 1.0, 1.0);
-}
+RCAC::RCAC() : RCAC(0.1, 1.0, 1.0) {}
 
-RCAC::RCAC(float P0_val)
-{
-    RCAC(P0_val, 1.0, 1.0);
-}
+RCAC::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0) {}
 
 RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     P0(P0_val), lambda(lambda_val), N_nf(N_nf_val)
@@ -39,6 +33,7 @@ RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
 
     one_matrix = eye<float, 1>();
     dummy.setZero();
+    std::cout << one_matrix(0, 0) << std::endl;
 }
 
 RCAC::RCAC(const RCAC & obj)
@@ -150,6 +145,7 @@ void RCAC::update_theta()
 
 float RCAC::compute_uk(float z, float z_int, float z_diff, float u)
 {
+    std::cout << one_matrix(0, 0) << std::endl;
     set_RCAC_data(z, u);
     buildRegressor(z, z_int, z_diff);
     filter_data();

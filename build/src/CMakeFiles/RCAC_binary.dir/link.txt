@@ -1,1 +1,0 @@
-/usr/bin/c++  -Wall  -rdynamic CMakeFiles/RCAC_binary.dir/main.cpp.o  -o RCAC_binary  libRCAC.a 

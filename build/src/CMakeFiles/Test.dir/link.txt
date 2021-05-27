@@ -1,1 +1,0 @@
-/usr/bin/c++  -Wall  -rdynamic CMakeFiles/Test.dir/Test_RCAC_functions.cpp.o  -o Test  libRCAC.a 
