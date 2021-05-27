@@ -144,7 +144,7 @@ void RCAC::update_theta()
 
 float RCAC::compute_uk(float z, float z_int, float z_diff, float u)
 {
-    std::cout << one_matrix(0, 0) << std::endl;
+    // std::cout << one_matrix(0, 0) << std::endl;
     set_RCAC_data(z, u);
     buildRegressor(z, z_int, z_diff);
     filter_data();
