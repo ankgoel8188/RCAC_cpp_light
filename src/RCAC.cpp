@@ -1,5 +1,5 @@
 #include "RCAC.h"
-#include <iostream>
+// #include <iostream>
 
 // using namespace std;
 
@@ -33,7 +33,6 @@ RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
 
     one_matrix = eye<float, 1>();
     dummy.setZero();
-    std::cout << one_matrix(0, 0) << std::endl;
 }
 
 RCAC::RCAC(const RCAC & obj)
