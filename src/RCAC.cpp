@@ -21,17 +21,24 @@ RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     theta.setZero();
     filtNu.setZero();
     filtNu(0,nf-1)=N_nf;
+    u_k = 0;
     u_km1 = 0;
+    u_filt = 0;
     z_km1 = 0;
+    z_filt = 0;
+
+    Gamma = 0;
+    Idty_lz = 0;
 
     Phi_k.setZero();
+    Phi_filt.setZero();
 
     ubar.setZero();
     Phibar.setZero();
-
-    Phi_filt.setZero();
+    PhibarBlock.setZero();
 
     one_matrix = eye<float, 1>();
+    dummy.setZero();
 }
 
 RCAC::RCAC(const RCAC & obj)
