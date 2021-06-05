@@ -1,7 +1,7 @@
 #ifndef _RCAC_HPP_
 #define _RCAC_HPP_
 
-#include <iostream>
+//#include <iostream>
 #include "RCAC.h"
 #include "matrix/math.hpp"
 using namespace std;
