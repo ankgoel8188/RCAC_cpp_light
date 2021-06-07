@@ -49,7 +49,7 @@ protected:
                                                 // Kd = theta(2,0)
 
     float u_k, u_km1, u_filt;
-    float z_km1, z_filt;
+    float z_k, z_filt;
     matrix::Matrix<float, 1, 3> Phi_k, Phi_filt;
 
     matrix::Matrix<float, 2, 1> ubar;        // Size nf by 1

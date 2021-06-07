@@ -18,7 +18,7 @@ RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     u_k = 0;
     u_km1 = 0;
     u_filt = 0;
-    z_km1 = 0;
+    z_k = 0;
     z_filt = 0;
 
     Gamma = 0;
@@ -44,7 +44,7 @@ RCAC::RCAC(const RCAC & obj)
     u_k = obj.u_k;
     u_km1 = obj.u_km1;
     u_filt = obj.u_filt;
-    z_km1 = obj.z_km1;
+    z_k = obj.z_k;
     z_filt = obj.z_filt;
     Phi_k = obj.Phi_k;
     Phi_filt = obj.Phi_filt;
@@ -66,7 +66,7 @@ RCAC& RCAC::operator=(const RCAC & obj)
     u_k = obj.u_k;
     u_km1 = obj.u_km1;
     u_filt = obj.u_filt;
-    z_km1 = obj.z_km1;
+    z_k = obj.z_k;
     z_filt = obj.z_filt;
     Phi_k = obj.Phi_k;
     Phi_filt = obj.Phi_filt;
@@ -80,9 +80,9 @@ RCAC& RCAC::operator=(const RCAC & obj)
     return *this;
 }
 
-void RCAC::set_RCAC_data(float z_km1_val, float u_km1_val)
+void RCAC::set_RCAC_data(float z_k_val, float u_km1_val)
 {
-    z_km1 = z_km1_val;
+    z_k = z_k_val;
     u_km1 = u_km1_val;
 }
 
@@ -113,7 +113,7 @@ void RCAC::filter_data()
         Phibar(0, jj) = Phi_k(0, jj);
     }
 
-    z_filt = z_km1;
+    z_filt = z_k;
 
     dummy = filtNu * ubar;
     u_filt = dummy(0, 0);
