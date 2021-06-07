@@ -27,9 +27,10 @@ public:
 
     int   getkk() {return kk;};
     float get_rcac_uk() {return u_k;};
+    float get_rcac_zk() {return z_k;};
     float get_rcac_theta(int i) {return theta(i,0);}
     float get_rcac_P(int i, int j){return P(i, j);};
-    float get_rcac_Phi(int i) {return Phi_k(i,0);}
+    float get_rcac_Phi(int i) {return Phi_k(0,i);}
 
     void set_RCAC_data(float, float);
     void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
