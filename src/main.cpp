@@ -4,7 +4,7 @@
 //#include <iostream>
 #include "RCAC.h"
 #include "matrix/math.hpp"
-using namespace std;
+//using namespace std; // Uncomment for testing
 
 int main()
 {
@@ -64,7 +64,7 @@ int main()
         z1km1 = z1;
         uout = myRCAC.compute_uk(z1, g1, zd1, u(0,0));
         u(0, 0) = uout;
-        cout << myRCAC.getkk() << "\t" << z(0, 0) << endl;
+        // cout << myRCAC.getkk() << "\t" << z(0, 0) << endl; // Uncomment for testing
         // std::cout << " y: " << y(0) << ", "  << y(1) << "\n z: " << z(0) << ", "  << z(1) << "\n u: " << u(0) << ", "  << u(1) << std::endl;
     }
     // ****************************************************

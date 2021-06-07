@@ -1,7 +1,7 @@
 #pragma once
 #include "matrix/math.hpp"
 
-using namespace matrix;
+// using namespace matrix;
 // using namespace std;
 
 /**

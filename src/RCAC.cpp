@@ -11,7 +11,7 @@ RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     P0(P0_val), lambda(lambda_val), N_nf(N_nf_val)
 {
     // Initialize interal RCAC variables
-    P = eye<float, 3>() * P0;
+    P = matrix::eye<float, 3>() * P0;
     theta.setZero();
     filtNu.setZero();
     filtNu(0,nf-1)=N_nf;
@@ -31,7 +31,7 @@ RCAC::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     Phibar.setZero();
     PhibarBlock.setZero();
 
-    one_matrix = eye<float, 1>();
+    one_matrix = matrix::eye<float, 1>();
     dummy.setZero();
 }
 
