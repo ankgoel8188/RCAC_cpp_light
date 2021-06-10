@@ -1,7 +1,7 @@
 #ifndef _RCAC_HPP_
 #define _RCAC_HPP_
 
-//#include <iostream>
+#include <iostream>
 #include "RCAC.h"
 #include "matrix/math.hpp"
 //using namespace std; // Uncomment for testing
@@ -41,7 +41,7 @@ int main()
     //*************************************************
     
     // RCAC RCAC2;
-    RCAC myRCAC;
+    RCAC<3> myRCAC;
     // myRCAC.set_RCAC_parameters(5,1,2,1);
     // myRCAC.init_RCAC(5,1,2);
 
@@ -51,6 +51,9 @@ int main()
     float uout;
     z1km1 = 0;
     g1 = 0;
+
+    const size_t dim = 3;
+    matrix::Matrix<float, 1, dim> Phi;
 
 
     for (int k = 0; k < kend; k++)
@@ -62,9 +65,12 @@ int main()
         g1 = g1 + z(0, 0);
         zd1 = z1 - z1km1;
         z1km1 = z1;
-        uout = myRCAC.compute_uk(z1, g1, zd1, u(0,0));
+        Phi(0, 0) = z1;
+        Phi(0, 1) = g1;
+        Phi(0, 2) = zd1;
+        uout = myRCAC.compute_uk(z1, Phi, u(0,0));
         u(0, 0) = uout;
-        // cout << myRCAC.getkk() << "\t" << z(0, 0) << endl; // Uncomment for testing
+        std::cout << myRCAC.getkk() << "\t" << z(0, 0) << std::endl; // Uncomment for testing
         // std::cout << " y: " << y(0) << ", "  << y(1) << "\n z: " << z(0) << ", "  << z(1) << "\n u: " << u(0) << ", "  << u(1) << std::endl;
     }
     // ****************************************************
