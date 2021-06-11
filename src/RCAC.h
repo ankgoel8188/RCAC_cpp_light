@@ -58,8 +58,8 @@ protected:
     matrix::Matrix<float, 1, MatDim> Phi_k, Phi_filt;
 
     matrix::Matrix<float, 2, 1> ubar;        // Size nf by 1
-    matrix::Matrix<float, 3, 3> Phibar;      // Size nf+1 by 1
-    matrix::Matrix<float, 2, 3> PhibarBlock; // Size nf by 1
+    matrix::Matrix<float, 3, MatDim> Phibar;      // Size nf+1 by 1
+    matrix::Matrix<float, 2, MatDim> PhibarBlock; // Size nf by 1
 
     float Gamma;
     float Idty_lz;
@@ -83,7 +83,7 @@ RCAC<MatDim>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     P0(P0_val), lambda(lambda_val), N_nf(N_nf_val)
 {
     // Initialize interal RCAC variables
-    P = matrix::eye<float, 3>() * P0;
+    P = matrix::eye<float, MatDim>() * P0;
     theta.setZero();
     filtNu.setZero();
     filtNu(0,nf-1)=N_nf;
@@ -169,13 +169,14 @@ void RCAC<MatDim>::buildRegressor(float z, float z_int, float z_diff)
     Phi_k(0, 2) = z_diff;
     // for (size_t i = 0; i < MatDim; ++i)
     // {
-    //     Phi_k(0, i) = 
+    //     Phi_k(0, i) =
     // }
 }
 
 template<size_t MatDim>
 void RCAC<MatDim>::filter_data()
 {
+    //TODO: CHECK LOGIC HERE.
     for (int ii = nf - 1; ii > 0; ii--)
     {
         ubar(ii, 0) = ubar(ii - 1, 0);
@@ -184,12 +185,12 @@ void RCAC<MatDim>::filter_data()
 
     for (int ii = nf; ii > 0; ii--)
     {
-        for (int jj = 0; jj < 3; jj++)
+        for (int jj = 0; jj < (int)MatDim; jj++)
         {
             Phibar(ii, jj) = Phibar(ii - 1, jj);
         }
     }
-    for (int jj = 0; jj < 3; jj++)
+    for (int jj = 0; jj < (int)MatDim; jj++)
     {
         Phibar(0, jj) = Phi_k(0, jj);
     }
@@ -201,7 +202,7 @@ void RCAC<MatDim>::filter_data()
 
     for (int ii = 0; ii < nf; ii++)
     {
-        for (int jj = 0; jj < 3; jj++)
+        for (int jj = 0; jj < (int)MatDim; jj++)
         {
             PhibarBlock(ii, jj) = Phibar(ii + 1, jj);
         }
@@ -215,6 +216,7 @@ void RCAC<MatDim>::update_theta()
 {
     if (kk > 3)
     {
+        // Phi_filt and P incompatible
         dummy = Phi_filt * P * Phi_filt.transpose();
         Gamma = lambda + dummy(0, 0);
         P = P - P * Phi_filt.transpose() * 1 / Gamma * Phi_filt * P;
