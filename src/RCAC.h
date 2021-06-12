@@ -10,7 +10,7 @@
  *
  * The notation here follows the JGCD 2019 implementation
  */
-template<size_t MatDim>
+template<size_t MatDim, size_t MatRows>
 class RCAC
 {
     float P0;
@@ -63,8 +63,11 @@ protected:
 
     float Gamma;
     float Idty_lz;
+    float Ru, Rz;
     matrix::Matrix<float, 1, 1> one_matrix;
     matrix::Matrix<float, 1, 1> dummy;
+    matrix::Matrix<float, MatRows, MatDim> dummyA;
+    matrix::Matrix<float, MatRows, MatRows> I, dummyB;
 
     int kk = 0;
 };
@@ -72,14 +75,14 @@ protected:
 
 // TEST: Template is not working correctly, so temp fix
 
-template<size_t MatDim>
-RCAC<MatDim>::RCAC() : RCAC(0.1, 1.0, 1.0) {}
+template<size_t MatDim, size_t MatRows>
+RCAC<MatDim, MatRows>::RCAC() : RCAC(0.1, 1.0, 1.0) {}
 
-template<size_t MatDim>
-RCAC<MatDim>::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0) {}
+template<size_t MatDim, size_t MatRows>
+RCAC<MatDim, MatRows>::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0) {}
 
-template<size_t MatDim>
-RCAC<MatDim>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
+template<size_t MatDim, size_t MatRows>
+RCAC<MatDim, MatRows>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     P0(P0_val), lambda(lambda_val), N_nf(N_nf_val)
 {
     // Initialize interal RCAC variables
@@ -96,6 +99,10 @@ RCAC<MatDim>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     Gamma = 0;
     Idty_lz = 0;
 
+    // set Ru, Rz to 1 for testing
+    Ru = 1;
+    Rz = 1;
+
     Phi_k.setZero();
     Phi_filt.setZero();
 
@@ -105,10 +112,13 @@ RCAC<MatDim>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
 
     one_matrix = matrix::eye<float, 1>();
     dummy.setZero();
+    dummyA.setZero();
+    dummyB.setZero();
+    I.setZero();
 }
 
-template<size_t MatDim>
-RCAC<MatDim>::RCAC(const RCAC & obj)
+template<size_t MatDim, size_t MatRows>
+RCAC<MatDim, MatRows>::RCAC(const RCAC & obj)
 {
     P0 = obj.P0;
     filtNu = obj.filtNu;
@@ -128,10 +138,15 @@ RCAC<MatDim>::RCAC(const RCAC & obj)
     Idty_lz = obj.Idty_lz;
     one_matrix = obj.one_matrix;
     dummy = obj.dummy;
+    dummyA = obj.dummyA;
+    dummyB = obj.dummyB;
+    I = obj.I;
+    Ru = obj.Ru;
+    Rz = obj.Rz;
 }
 
-template<size_t MatDim>
-RCAC<MatDim>& RCAC<MatDim>::operator=(const RCAC & obj)
+template<size_t MatDim, size_t MatRows>
+RCAC<MatDim, MatRows>& RCAC<MatDim, MatRows>::operator=(const RCAC & obj)
 {
     P0 = obj.P0;
     filtNu = obj.filtNu;
@@ -151,30 +166,53 @@ RCAC<MatDim>& RCAC<MatDim>::operator=(const RCAC & obj)
     Idty_lz = obj.Idty_lz;
     one_matrix = obj.one_matrix;
     dummy = obj.dummy;
+    dummyA = obj.dummyA;
+    dummyB = obj.dummyB;
+    I = obj.I;
+    Ru = obj.Ru;
+    Rz = obj.Rz;
     return *this;
 }
 
-template<size_t MatDim>
-void RCAC<MatDim>::set_RCAC_data(float z_k_val, float u_km1_val)
+template<size_t MatDim, size_t MatRows>
+void RCAC<MatDim, MatRows>::set_RCAC_data(float z_k_val, float u_km1_val)
 {
     z_k = z_k_val;
     u_km1 = u_km1_val;
+
+    switch((int)MatRows){
+        case 2 :
+            for (int i = 0; i < MatDim ; i++){
+                dummyA(0,i) = Phi_filt(0, i);
+                dummyA(1,i) = Phi_k(0,i);
+            }
+
+            I(0,0) = Rz;
+            I(0,1) = Ru;
+            break;
+        default :
+            dummyA = Phi_filt;
+            I = lambda;
+            break;
+    }
+
+
 }
 
-template<size_t MatDim>
-void RCAC<MatDim>::buildRegressor(float z, float z_int, float z_diff)
-{
-    Phi_k(0, 0) = z;
-    Phi_k(0, 1) = z_int;
-    Phi_k(0, 2) = z_diff;
-    // for (size_t i = 0; i < MatDim; ++i)
-    // {
-    //     Phi_k(0, i) =
-    // }
-}
+// template<size_t MatDim, size_t MatRows>
+// void RCAC<MatDim, MatRows>::buildRegressor(float z, float z_int, float z_diff)
+// {
+//     Phi_k(0, 0) = z;
+//     Phi_k(0, 1) = z_int;
+//     Phi_k(0, 2) = z_diff;
+//     // for (size_t i = 0; i < MatDim; ++i)
+//     // {
+//     //     Phi_k(0, i) =
+//     // }
+// }
 
-template<size_t MatDim>
-void RCAC<MatDim>::filter_data()
+template<size_t MatDim, size_t MatRows>
+void RCAC<MatDim, MatRows>::filter_data()
 {
     //TODO: CHECK LOGIC HERE.
     for (int ii = nf - 1; ii > 0; ii--)
@@ -211,24 +249,29 @@ void RCAC<MatDim>::filter_data()
 }
 
 
-template<size_t MatDim>
-void RCAC<MatDim>::update_theta()
+template<size_t MatDim, size_t MatRows>
+void RCAC<MatDim, MatRows>::update_theta()
 {
     if (kk > 3)
     {
         // Phi_filt and P incompatible
-        dummy = Phi_filt * P * Phi_filt.transpose();
-        Gamma = lambda + dummy(0, 0);
-        P = P - P * Phi_filt.transpose() * 1 / Gamma * Phi_filt * P;
-        P = P / lambda;
+        dummyB = dummyA * P * dummyA.transpose();
+        dummyB = geninv(I) + dummyB;
+        P = P - P * dummyA.transpose() * geninv(dummyB) * dummyA * P;
 
-        theta = theta - P * Phi_filt.transpose() * (z_filt * one_matrix + Phi_filt * theta - u_filt);
+        // for(int i = 0; i < MatDim; i++){
+        //     PX4_INFO("P:\t%8.6f", (double)P(i,i));
+        // }
+
+        //P = P / lambda;
+
+        theta = theta - P * Phi_filt.transpose() * (z_filt * one_matrix - u_filt + Phi_filt * theta) - P * Phi_k.transpose() * Ru * Phi_k * theta;
     }
     // cout << kk << "\t" << z_filt << "\t" << u_filt << "\t" << Phi_filt << "\t" << theta.transpose() << endl;
 }
 
-template<size_t MatDim>
-float RCAC<MatDim>::compute_uk(float _z_in, matrix::Matrix<float, 1, MatDim> _phi_in, float _u_km1_in)
+template<size_t MatDim, size_t MatRows>
+float RCAC<MatDim, MatRows>::compute_uk(float _z_in, matrix::Matrix<float, 1, MatDim> _phi_in, float _u_km1_in)
 {
     // std::cout << one_matrix(0, 0) << std::endl;
     // set_RCAC_data(z, u);
