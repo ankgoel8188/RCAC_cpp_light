@@ -13,14 +13,16 @@
 template<size_t MatDim, size_t MatRows>
 class RCAC
 {
+    //TO DO: Implement R as variable vector to allow user to specify either one or two values for diagonal elements in matrix containing Rz, Ru
     float P0;
-    float lambda;
+    float Rz;
+    float Ru;
     float N_nf;
 
 public:
     RCAC();
     RCAC(float P0_val);
-    RCAC(float P0_val, float lambda_val, float N_nf_val);
+    RCAC(float P0_val, float Rz_val, float Ru_val, float N_nf_val);
 
     ~RCAC() = default;
     RCAC(const RCAC & obj);
@@ -63,7 +65,6 @@ protected:
 
     float Gamma;
     float Idty_lz;
-    float Ru, Rz;
     matrix::Matrix<float, 1, 1> one_matrix;
     matrix::Matrix<float, 1, 1> dummy;
     matrix::Matrix<float, MatRows, MatDim> dummyA;
@@ -76,14 +77,14 @@ protected:
 // TEST: Template is not working correctly, so temp fix
 
 template<size_t MatDim, size_t MatRows>
-RCAC<MatDim, MatRows>::RCAC() : RCAC(0.1, 1.0, 1.0) {}
+RCAC<MatDim, MatRows>::RCAC() : RCAC(0.1, 1.0, 1.0, 1.0) {}
 
 template<size_t MatDim, size_t MatRows>
-RCAC<MatDim, MatRows>::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0) {}
+RCAC<MatDim, MatRows>::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0, 1.0) {}
 
 template<size_t MatDim, size_t MatRows>
-RCAC<MatDim, MatRows>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
-    P0(P0_val), lambda(lambda_val), N_nf(N_nf_val)
+RCAC<MatDim, MatRows>::RCAC(float P0_val, float Rz_val, float Ru_val, float N_nf_val) :
+    P0(P0_val), Rz(Rz_val), Ru(Ru_val), N_nf(N_nf_val)
 {
     // Initialize interal RCAC variables
     P = matrix::eye<float, MatDim>() * P0;
@@ -100,8 +101,8 @@ RCAC<MatDim, MatRows>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     Idty_lz = 0;
 
     // set Ru, Rz to 1 for testing
-    Ru = 1;
-    Rz = 1;
+    // Ru = 1;
+    // Rz = 1;
 
     Phi_k.setZero();
     Phi_filt.setZero();
@@ -192,7 +193,7 @@ void RCAC<MatDim, MatRows>::set_RCAC_data(float z_k_val, float u_km1_val)
             break;
         default :
             dummyA = Phi_filt;
-            I = lambda;
+            I = Rz;
             break;
     }
 
@@ -258,12 +259,6 @@ void RCAC<MatDim, MatRows>::update_theta()
         dummyB = dummyA * P * dummyA.transpose();
         dummyB = geninv(I) + dummyB;
         P = P - P * dummyA.transpose() * geninv(dummyB) * dummyA * P;
-
-        // for(int i = 0; i < MatDim; i++){
-        //     PX4_INFO("P:\t%8.6f", (double)P(i,i));
-        // }
-
-        //P = P / lambda;
 
         theta = theta - P * Phi_filt.transpose() * (z_filt * one_matrix - u_filt + Phi_filt * theta) - P * Phi_k.transpose() * Ru * Phi_k * theta;
     }
