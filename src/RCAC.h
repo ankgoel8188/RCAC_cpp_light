@@ -1,5 +1,9 @@
 #pragma once
 #include "matrix/math.hpp"
+#include "Limits.hpp"
+#include <limits>
+#include <cmath>
+#include <cfloat>
 
 // using namespace matrix;
 // using namespace std;
@@ -37,14 +41,19 @@ public:
     //TODO: FIX THESE GET FUNCTIONS, NOT FOOLPROOF
     float get_rcac_theta(int i) {return theta(i,0);}
     float get_rcac_P(int i, int j){return P(i, j);};
-    float get_rcac_Phi(int i) {return Phi_k(0,i);}
+    float get_rcac_Phi(int i) {return Phi_k(0,i);};
+    float get_rcac_integral(int i) {return rate_int;};
 
-    // void set_RCAC_data(float, float);
-    //void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
+//     void set_RCAC_data(float, float);
+//     void set_lim_int(float lim_int_in);
+//     void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
     void normalize_e();
+  
     void filter_data();
     void build_Rblock();
     void update_theta();
+    void update_integral(const float rate_error, const float dt);
+    void reset_integral();
 
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in, int e_fun_num_in);
 
@@ -77,6 +86,10 @@ protected:
     matrix::Matrix<float, l_Rblock, l_theta> Phiblock;
     matrix::Matrix<float, l_Rblock, l_Rblock> Rblock, PhiB_P_PhiB_t;
 
+    float rate_int;
+
+    //TODO: Initialize lim_int
+    float lim_int;
     int kk = 0;
 };
 
@@ -120,6 +133,7 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float Rz_val, floa
 
     one_matrix = matrix::eye<float, 1>();
     dummy.setZero();
+    lim_int = std::numeric_limits<float>::infinity();
     Phiblock.setZero();
     PhiB_P_PhiB_t.setZero();
     Rblock.setZero();
@@ -146,6 +160,7 @@ RCAC<l_theta, l_Rblock>::RCAC(const RCAC & obj)
     Idty_lz = obj.Idty_lz;
     one_matrix = obj.one_matrix;
     dummy = obj.dummy;
+    lim_int = obj.lim_int;
     Phiblock = obj.Phiblock;
     PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
     Rblock = obj.Rblock;
@@ -174,6 +189,7 @@ RCAC<l_theta, l_Rblock>& RCAC<l_theta, l_Rblock>::operator=(const RCAC & obj)
     Idty_lz = obj.Idty_lz;
     one_matrix = obj.one_matrix;
     dummy = obj.dummy;
+    lim_int = obj.lim_int;
     Phiblock = obj.Phiblock;
     PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
     Rblock = obj.Rblock;
@@ -334,3 +350,36 @@ float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, 
 
     return u_k;
 }
+
+template<size_t MatDim>
+void RCAC<MatDim>::set_lim_int(float lim_int_in)
+{
+    lim_int = lim_int_in;
+}
+
+template<size_t MatDim>
+void RCAC<MatDim>::update_integral(const float rate_error, const float dt)
+{
+
+    // I term factor: reduce the I gain with increasing rate error.
+    // This counteracts a non-linear effect where the integral builds up quickly upon a large setpoint
+    // change (noticeable in a bounce-back effect after a flip).
+    // The formula leads to a gradual decrease w/o steps, while only affecting the cases where it should:
+    // with the parameter set to 400 degrees, up to 100 deg rate error, i_factor is almost 1 (having no effect),
+    // and up to 200 deg error leads to <25% reduction of I.
+    float i_factor = rate_error / math::radians(400.f);
+    float rate_i = rate_int + i_factor * rate_error * dt;
+
+    // do not propagate the result if out of range or invalid
+    if (std::isfinite(rate_i)) {
+        rate_int = math::constrain(rate_i, -lim_int, lim_int);
+    }
+
+}
+
+template<size_t MatDim>
+void RCAC<MatDim>::reset_integral()
+{
+    lim_int = 0;
+}
+
