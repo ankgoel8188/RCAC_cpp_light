@@ -43,15 +43,8 @@ public:
     //void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
     void normalize_e();
     void filter_data();
-    void build_R();
+    void build_Rblock();
     void update_theta();
-
-
-    // float norm_e_fun_1(float e_in);
-    // float norm_e_fun_2(float e_in);
-    // float norm_e_fun_3(float e_in);
-    // float norm_e_fun_4(float e_in);
-    // float norm_e_fun_5(float e_in);
 
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in, int e_fun_num_in);
 
@@ -81,8 +74,8 @@ protected:
     float Idty_lz;
     matrix::Matrix<float, 1, 1> one_matrix;
     matrix::Matrix<float, 1, 1> dummy;
-    matrix::Matrix<float, l_R, l_theta> dummyA;
-    matrix::Matrix<float, l_R, l_R> I, dummyB;
+    matrix::Matrix<float, l_R, l_theta> Phiblock;
+    matrix::Matrix<float, l_R, l_R> Rblock, PhiB_P_PhiB_t;
 
     int kk = 0;
 };
@@ -127,9 +120,9 @@ RCAC<l_theta, l_R>::RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_
 
     one_matrix = matrix::eye<float, 1>();
     dummy.setZero();
-    dummyA.setZero();
-    dummyB.setZero();
-    I.setZero();
+    Phiblock.setZero();
+    PhiB_P_PhiB_t.setZero();
+    Rblock.setZero();
 }
 
 template<size_t l_theta, size_t l_R>
@@ -153,9 +146,9 @@ RCAC<l_theta, l_R>::RCAC(const RCAC & obj)
     Idty_lz = obj.Idty_lz;
     one_matrix = obj.one_matrix;
     dummy = obj.dummy;
-    dummyA = obj.dummyA;
-    dummyB = obj.dummyB;
-    I = obj.I;
+    Phiblock = obj.Phiblock;
+    PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
+    Rblock = obj.Rblock;
     Ru = obj.Ru;
     Rz = obj.Rz;
 }
@@ -181,9 +174,9 @@ RCAC<l_theta, l_R>& RCAC<l_theta, l_R>::operator=(const RCAC & obj)
     Idty_lz = obj.Idty_lz;
     one_matrix = obj.one_matrix;
     dummy = obj.dummy;
-    dummyA = obj.dummyA;
-    dummyB = obj.dummyB;
-    I = obj.I;
+    Phiblock = obj.Phiblock;
+    PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
+    Rblock = obj.Rblock;
     Ru = obj.Ru;
     Rz = obj.Rz;
     return *this;
@@ -274,16 +267,16 @@ void RCAC<l_theta, l_R>::filter_data()
 }
 
 template<size_t l_theta, size_t l_R>
-void RCAC<l_theta, l_R>::build_R()
+void RCAC<l_theta, l_R>::build_Rblock()
 {
     for (int i = 0; i < (int)l_theta ; i++)
     {
-        dummyA(0,i) = Phi_filt(0, i);
-        dummyA(1,i) = Phi_k(0,i);
+        Phiblock(0,i) = Phi_filt(0, i);
+        Phiblock(1,i) = Phi_k(0,i);
     }
 
-    I(0,0) = Rz;
-    I(0,1) = Ru;
+    Rblock(0,0) = Rz;
+    Rblock(1,1) = Ru;
 }
 
 
@@ -294,9 +287,9 @@ void RCAC<l_theta, l_R>::update_theta()
     {
         if ((int)l_R == 2)
         {
-            dummyB = dummyA * P * dummyA.transpose();
-            dummyB = geninv(I) + dummyB;
-            P = P - P * dummyA.transpose() * geninv(dummyB) * dummyA * P;
+            PhiB_P_PhiB_t = Phiblock * P * Phiblock.transpose();
+            PhiB_P_PhiB_t = geninv(Rblock) + PhiB_P_PhiB_t;
+            P = P - P * Phiblock.transpose() * geninv(PhiB_P_PhiB_t) * Phiblock * P;
 
             theta = theta - P * Phi_filt.transpose() * (z_filt * one_matrix - u_filt + Phi_filt * theta) - P * Phi_k.transpose() * Ru * Phi_k * theta;
         }
@@ -331,7 +324,7 @@ float RCAC<l_theta, l_R>::compute_uk(float _z_in, matrix::Matrix<float, 1, l_the
     filter_data();
     if ((int)l_R == 2)
     {
-        build_R();
+        build_Rblock();
     }
     update_theta();
 
