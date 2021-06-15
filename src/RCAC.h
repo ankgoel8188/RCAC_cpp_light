@@ -1,6 +1,6 @@
 #pragma once
-#include "matrix/math.hpp"
-#include "Limits.hpp"
+// #include "matrix/math.hpp"
+// #include "Limits.hpp"
 #include <limits>
 #include <cmath>
 #include <cfloat>
@@ -28,7 +28,7 @@ class RCAC
 public:
     RCAC();
     RCAC(float P0_val);
-    RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_val, float N_nf_val);
+    RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_val, float N_nf_val, float lim_int_val = std::numeric_limits<float>::infinity());
 
     ~RCAC() = default;
     RCAC(const RCAC & obj);
@@ -42,13 +42,14 @@ public:
     float get_rcac_theta(int i) {return theta(i,0);}
     float get_rcac_P(int i, int j){return P(i, j);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);};
-    float get_rcac_integral(int i) {return rate_int;};
+    float get_rcac_integral() {return rate_int;};
+
+    void set_lim_int(float lim_int_in);
 
 //     void set_RCAC_data(float, float);
-//     void set_lim_int(float lim_int_in);
 //     void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
     void normalize_e();
-  
+
     void filter_data();
     void build_Rblock();
     void update_theta();
@@ -103,8 +104,8 @@ template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0, 1.0, 1.0) {}
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_val, float N_nf_val) :
-    P0(P0_val), lambda(lambda_val), Rz(Rz_val), Ru(Ru_val), N_nf(N_nf_val)
+RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_val, float N_nf_val, float lim_int_val) :
+                              P0(P0_val), lambda(lambda_val), Rz(Rz_val), Ru(Ru_val), N_nf(N_nf_val), lim_int(lim_int_val)
 {
     // Initialize interal RCAC variables
     P = matrix::eye<float, l_theta>() * P0;
@@ -133,7 +134,6 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float Rz_val, floa
 
     one_matrix = matrix::eye<float, 1>();
     dummy.setZero();
-    lim_int = std::numeric_limits<float>::infinity();
     Phiblock.setZero();
     PhiB_P_PhiB_t.setZero();
     Rblock.setZero();
@@ -324,7 +324,6 @@ void RCAC<l_theta, l_Rblock>::update_theta()
 
 
 
-
 template<size_t l_theta, size_t l_Rblock>
 float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in, int e_fun_num_in)
 {
@@ -351,14 +350,8 @@ float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, 
     return u_k;
 }
 
-template<size_t MatDim>
-void RCAC<MatDim>::set_lim_int(float lim_int_in)
-{
-    lim_int = lim_int_in;
-}
-
-template<size_t MatDim>
-void RCAC<MatDim>::update_integral(const float rate_error, const float dt)
+template<size_t l_theta, size_t l_Rblock>
+void RCAC<l_theta, l_Rblock>::update_integral(const float rate_error, const float dt)
 {
 
     // I term factor: reduce the I gain with increasing rate error.
@@ -377,9 +370,14 @@ void RCAC<MatDim>::update_integral(const float rate_error, const float dt)
 
 }
 
-template<size_t MatDim>
-void RCAC<MatDim>::reset_integral()
+template<size_t l_theta, size_t l_Rblock>
+void RCAC<l_theta, l_Rblock>::reset_integral()
 {
     lim_int = 0;
 }
 
+template<size_t l_theta, size_t l_Rblock>
+void RCAC<l_theta, l_Rblock>::set_lim_int(float lim_int_in)
+{
+    lim_int = 0;
+}
