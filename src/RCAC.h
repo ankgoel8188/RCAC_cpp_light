@@ -42,7 +42,7 @@ public:
     float get_rcac_theta(int i) {return theta(i,0);}
     float get_rcac_P(int i, int j){return P(i, j);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);};
-    float get_rcac_integral() {return rate_int;};
+    float get_rcac_integral() {return rcac_int;};
 
     void set_lim_int(float lim_int_in);
 
@@ -53,7 +53,7 @@ public:
     void filter_data();
     void build_Rblock();
     void update_theta();
-    void update_integral(const float rate_error, const float dt);
+    void update_integral(const float rcac_error, const float dt);
     void reset_integral();
 
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in, int e_fun_num_in);
@@ -87,7 +87,7 @@ protected:
     matrix::Matrix<float, l_Rblock, l_theta> Phiblock;
     matrix::Matrix<float, l_Rblock, l_Rblock> Rblock, PhiB_P_PhiB_t;
 
-    float rate_int;
+    float rcac_int;
 
     //TODO: Initialize lim_int
     float lim_int;
@@ -351,7 +351,7 @@ float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, 
 }
 
 template<size_t l_theta, size_t l_Rblock>
-void RCAC<l_theta, l_Rblock>::update_integral(const float rate_error, const float dt)
+void RCAC<l_theta, l_Rblock>::update_integral(const float rcac_error, const float dt)
 {
 
     // I term factor: reduce the I gain with increasing rate error.
@@ -360,12 +360,14 @@ void RCAC<l_theta, l_Rblock>::update_integral(const float rate_error, const floa
     // The formula leads to a gradual decrease w/o steps, while only affecting the cases where it should:
     // with the parameter set to 400 degrees, up to 100 deg rate error, i_factor is almost 1 (having no effect),
     // and up to 200 deg error leads to <25% reduction of I.
-    float i_factor = rate_error / math::radians(400.f);
-    float rate_i = rate_int + i_factor * rate_error * dt;
+    float i_factor = rcac_error / math::radians(400.f);
+    i_factor = math::max(0.0f, 1.f - i_factor * i_factor);
+
+    float rcac_i = rcac_int + i_factor * rcac_error * dt;
 
     // do not propagate the result if out of range or invalid
-    if (std::isfinite(rate_i)) {
-        rate_int = math::constrain(rate_i, -lim_int, lim_int);
+    if (std::isfinite(rcac_i)) {
+        rcac_int = math::constrain(rcac_i, -lim_int, lim_int);
     }
 
 }
@@ -373,7 +375,7 @@ void RCAC<l_theta, l_Rblock>::update_integral(const float rate_error, const floa
 template<size_t l_theta, size_t l_Rblock>
 void RCAC<l_theta, l_Rblock>::reset_integral()
 {
-    lim_int = 0;
+    rcac_int = 0;
 }
 
 template<size_t l_theta, size_t l_Rblock>
