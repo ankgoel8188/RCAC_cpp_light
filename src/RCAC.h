@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include "matrix/math.hpp"
 
 // using namespace matrix;
@@ -23,8 +22,8 @@ class RCAC
 public:
     RCAC();
     RCAC(float P0_val);
-    RCAC(float P0_val, float lambda_val, float N_nf_val);
-    RCAC(float P0_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val);
+    RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val);
+    RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val);
 
     ~RCAC() = default;
     RCAC(const RCAC & obj);
@@ -53,15 +52,15 @@ protected:
     const int nf = 2;
     float mu = 1.0;
     float nu = 1.0;
-    bool Rblock_ON = 1;
-
+    int kk;
+    bool Rblock_ON;
 
     matrix::Matrix<float, 1, 2> filtNu;         // 1st order filter. Gf = filtNu(0) + filtNu(1)/q
                                                 // In most cases, filtNu(0) = 0 and filtNu(1) = +-1
 
     //RCAC internal variables
     matrix::Matrix<float, l_theta, l_theta> P;
-    matrix::Matrix<float, l_theta, 1> theta;          // Kp = theta(0,0)
+    matrix::Matrix<float, l_theta, 1> theta;    // Kp = theta(0,0)
                                                 // Ki = theta(1,0)
                                                 // Kd = theta(2,0)
 
@@ -69,9 +68,9 @@ protected:
     float z_k, z_filt;
     matrix::Matrix<float, 1, l_theta> Phi_k, Phi_filt;
 
-    matrix::Matrix<float, 2, 1> ubar;        // Size nf by 1
-    matrix::Matrix<float, 3, l_theta> Phibar;      // Size nf+1 by 1
-    matrix::Matrix<float, 2, l_theta> PhibarBlock; // Size nf by 1
+    matrix::Matrix<float, 2, 1> ubar;               // Size nf by 1
+    matrix::Matrix<float, 3, l_theta> Phibar;       // Size nf+1 by 1
+    matrix::Matrix<float, 2, l_theta> PhibarBlock;  // Size nf by 1
 
     float Gamma;
     float Idty_lz;
@@ -79,22 +78,18 @@ protected:
     matrix::Matrix<float, 1, 1> dummy;
     matrix::Matrix<float, l_Rblock, l_theta> Phiblock;
     matrix::Matrix<float, l_Rblock, l_Rblock> PhiB_P_PhiB_t;
-
-    int kk = 0;
 };
 
-
 // TEST: Template is not working correctly, so temp fix
+template<size_t l_theta, size_t l_Rblock>
+RCAC<l_theta, l_Rblock>::RCAC() : RCAC(0.1, 1.0, 1.0, 0) {}
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC() : RCAC(0.1, 1.0, 1.0) {}
+RCAC<l_theta, l_Rblock>::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0, 0) {}
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0) {}
-
-template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
-    P0(P0_val), lambda(lambda_val), N_nf(N_nf_val)
+RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val) :
+    P0(P0_val), lambda(lambda_val), N_nf(N_nf_val), e_fun_num(e_fun_num_val)
 {
     // Initialize internal RCAC variables
     P = matrix::eye<float, l_theta>() * P0;
@@ -106,11 +101,11 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
     u_filt = 0;
     z_k = 0;
     z_filt = 0;
+    kk = 0;
 
     Gamma = 0;
     Idty_lz = 0;
 
-    e_fun_num = 0;
     Rblock_ON = 0;
 
     Phi_k.setZero();
@@ -127,8 +122,8 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float N_nf_val) :
 }
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(float P0_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val) :
-    P0(P0_val), Rblock(Rblock_val), N_nf(N_nf_val), e_fun_num(e_fun_num_val)
+RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val) :
+    P0(P0_val), lambda(lambda_val), Rblock(Rblock_val), N_nf(N_nf_val), e_fun_num(e_fun_num_val)
 {
     P = matrix::eye<float, l_theta>() * P0;
     theta.setZero();
@@ -139,6 +134,7 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, matrix::Matrix<float, l_Rblock, l_Rb
     u_filt = 0;
     z_k = 0;
     z_filt = 0;
+    kk = 0;
 
     Gamma = 0;
     Idty_lz = 0;
@@ -162,6 +158,11 @@ template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>::RCAC(const RCAC & obj)
 {
     P0 = obj.P0;
+    lambda = obj.lambda;
+    Rblock = obj.Rblock;
+    N_nf = obj.N_nf;
+    e_fun_num = obj.e_fun_num;
+    Rblock_ON = obj.Rblock_ON;
     filtNu = obj.filtNu;
     P = obj.P;
     theta = obj.theta;
@@ -181,14 +182,18 @@ RCAC<l_theta, l_Rblock>::RCAC(const RCAC & obj)
     dummy = obj.dummy;
     Phiblock = obj.Phiblock;
     PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
-    Rblock = obj.Rblock;
-    Rblock_ON = obj.Rblock_ON;
+    kk = obj.kk;
 }
 
 template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>& RCAC<l_theta, l_Rblock>::operator=(const RCAC & obj)
 {
     P0 = obj.P0;
+    lambda = obj.lambda;
+    Rblock = obj.Rblock;
+    N_nf = obj.N_nf;
+    e_fun_num = obj.e_fun_num;
+    Rblock_ON = obj.Rblock_ON;
     filtNu = obj.filtNu;
     P = obj.P;
     theta = obj.theta;
@@ -208,8 +213,7 @@ RCAC<l_theta, l_Rblock>& RCAC<l_theta, l_Rblock>::operator=(const RCAC & obj)
     dummy = obj.dummy;
     Phiblock = obj.Phiblock;
     PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
-    Rblock = obj.Rblock;
-    Rblock_ON = obj.Rblock_ON;
+    kk = obj.kk;
     return *this;
 }
 
@@ -237,7 +241,7 @@ void RCAC<l_theta, l_Rblock>::normalize_e()
 {
     float pi = (float)M_PI;
 
-    std::cout << "\nError Function Update\n";
+    // std::cout << "\nError normalization Update:\t" << e_fun_num;
     switch (e_fun_num)
     {
         case 1:
@@ -253,7 +257,6 @@ void RCAC<l_theta, l_Rblock>::normalize_e()
             z_k = mu*(float)tanh((nu*z_k)/mu);
             break;
         case 5:
-            // TO DO: double check
             z_k = mu * (float)erf(((float)sqrt(pi)*nu*z_k)/(2*mu));
             break;
         default:
@@ -303,7 +306,7 @@ void RCAC<l_theta, l_Rblock>::build_Phiblock()
 {
     for (int i = 0; i < (int)l_theta ; i++)
     {
-        std::cout << "\nPhiblock update - Rblock ON\n";
+        // std::cout << "\nPhiblock update - Rblock ON\n";
         Phiblock(0,i) = Phi_filt(0, i);
         Phiblock(1,i) = Phi_k(0,i);
     }
@@ -343,7 +346,6 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_OFF()
 template<size_t l_theta, size_t l_Rblock>
 float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in)
 {
-    // buildRegressor(z, z_int, z_diff);
     Phi_k = _phi_in;
     z_k = _z_in;
     u_km1 = _u_km1_in;
@@ -367,7 +369,7 @@ float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, 
 
     dummy = Phi_k * theta;
     u_k = dummy(0, 0);
-    kk = kk + 1;
+    kk++;
 
     return u_k;
 }
