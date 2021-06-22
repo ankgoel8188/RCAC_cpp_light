@@ -1,9 +1,9 @@
 #pragma once
 // #include "matrix/math.hpp"
 // #include "Limits.hpp"
-#include <limits>
-#include <cmath>
-#include <cfloat>
+// #include <limits>
+// #include <cmath>
+// #include <cfloat>
 
 // using namespace matrix;
 // using namespace std;
@@ -28,7 +28,7 @@ class RCAC
 public:
     RCAC();
     RCAC(float P0_val);
-    RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_val, float N_nf_val, float lim_int_val = std::numeric_limits<float>::infinity());
+    RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_val, float N_nf_val, float lim_int_val = FLT_MAX);
 
     ~RCAC() = default;
     RCAC(const RCAC & obj);
@@ -366,7 +366,7 @@ void RCAC<l_theta, l_Rblock>::update_integral(const float rcac_error, const floa
     float rcac_i = rcac_int + i_factor * rcac_error * dt;
 
     // do not propagate the result if out of range or invalid
-    if (std::isfinite(rcac_i)) {
+    if (PX4_ISFINITE(rcac_i)) {
         rcac_int = math::constrain(rcac_i, -lim_int, lim_int);
     }
 
