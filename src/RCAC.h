@@ -1,4 +1,5 @@
 #pragma once
+
 #include "matrix/math.hpp"
 #include <iostream>
 
@@ -23,8 +24,12 @@ class RCAC
 public:
     RCAC();
     RCAC(float P0_val);
-    RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val);
-    RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val);
+// <<<<<<< Variable_RCAC_John
+    RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
+    RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
+// =======
+//     RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_val, float N_nf_val, float lim_int_val = FLT_MAX);
+// >>>>>>> RCAC_v2_dev
 
     ~RCAC() = default;
     RCAC(const RCAC & obj);
@@ -39,14 +44,23 @@ public:
     float get_rcac_P(int i, int j){return P(i, j);};
     float get_rcac_Ru(){return Rblock(1,1);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);}
+    float get_rcac_integral() {return rcac_int;};
 
-    // void set_RCAC_data(float, float);
-    //void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
+
+    void set_lim_int(float lim_int_in);
+
+//     void set_RCAC_data(float, float);
+//     void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
     void normalize_e();
+
     void filter_data();
     void build_Phiblock();
     void update_theta_Rblock_ON();
     void update_theta_Rblock_OFF();
+//     void build_Rblock();
+//     void update_theta();
+    void update_integral(const float rcac_error, const float dt);
+    void reset_integral();
 
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in);
 
@@ -80,6 +94,11 @@ protected:
     matrix::Matrix<float, 1, 1> dummy;
     matrix::Matrix<float, l_Rblock, l_theta> Phiblock;
     matrix::Matrix<float, l_Rblock, l_Rblock> PhiB_P_PhiB_t;
+  
+    float rcac_int;
+
+    //TODO: Initialize lim_int
+    float lim_int;
 };
 
 // TEST: Template is not working correctly, so temp fix
@@ -125,7 +144,8 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float N_nf_val, in
 
 template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val) :
-    P0(P0_val), lambda(lambda_val), Rblock(Rblock_val), N_nf(N_nf_val), e_fun_num(e_fun_num_val)
+    P0(P0_val), lambda(lambda_val), Rblock(Rblock_val), N_nf(N_nf_val), e_fun_num(e_fun_num_val), lim_int(lim_int_val)
+
 {
     P = matrix::eye<float, l_theta>() * P0;
     theta.setZero();
@@ -182,6 +202,7 @@ RCAC<l_theta, l_Rblock>::RCAC(const RCAC & obj)
     Idty_lz = obj.Idty_lz;
     one_matrix = obj.one_matrix;
     dummy = obj.dummy;
+    lim_int = obj.lim_int;
     Phiblock = obj.Phiblock;
     PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
     kk = obj.kk;
@@ -213,6 +234,7 @@ RCAC<l_theta, l_Rblock>& RCAC<l_theta, l_Rblock>::operator=(const RCAC & obj)
     Idty_lz = obj.Idty_lz;
     one_matrix = obj.one_matrix;
     dummy = obj.dummy;
+    lim_int = obj.lim_int;
     Phiblock = obj.Phiblock;
     PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
     kk = obj.kk;
@@ -344,7 +366,6 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_OFF()
     }
 }
 
-
 template<size_t l_theta, size_t l_Rblock>
 float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in)
 {
@@ -376,3 +397,36 @@ float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, 
     return u_k;
 }
 
+template<size_t l_theta, size_t l_Rblock>
+void RCAC<l_theta, l_Rblock>::update_integral(const float rcac_error, const float dt)
+{
+
+    // I term factor: reduce the I gain with increasing rate error.
+    // This counteracts a non-linear effect where the integral builds up quickly upon a large setpoint
+    // change (noticeable in a bounce-back effect after a flip).
+    // The formula leads to a gradual decrease w/o steps, while only affecting the cases where it should:
+    // with the parameter set to 400 degrees, up to 100 deg rate error, i_factor is almost 1 (having no effect),
+    // and up to 200 deg error leads to <25% reduction of I.
+    float i_factor = rcac_error / math::radians(400.f);
+    i_factor = math::max(0.0f, 1.f - i_factor * i_factor);
+
+    float rcac_i = rcac_int + i_factor * rcac_error * dt;
+
+    // do not propagate the result if out of range or invalid
+    if (PX4_ISFINITE(rcac_i)) {
+        rcac_int = math::constrain(rcac_i, -lim_int, lim_int);
+    }
+
+}
+
+template<size_t l_theta, size_t l_Rblock>
+void RCAC<l_theta, l_Rblock>::reset_integral()
+{
+    rcac_int = 0;
+}
+
+template<size_t l_theta, size_t l_Rblock>
+void RCAC<l_theta, l_Rblock>::set_lim_int(float lim_int_in)
+{
+    lim_int = 0;
+}
