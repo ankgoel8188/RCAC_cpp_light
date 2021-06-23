@@ -1,5 +1,6 @@
 #pragma once
 #include "matrix/math.hpp"
+#include <iostream>
 
 // using namespace matrix;
 // using namespace std;
@@ -36,6 +37,7 @@ public:
     //TODO: FIX THESE GET FUNCTIONS, NOT FOOLPROOF
     float get_rcac_theta(int i) {return theta(i,0);}
     float get_rcac_P(int i, int j){return P(i, j);};
+    float get_rcac_Ru(){return Rblock(1,1);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);}
 
     // void set_RCAC_data(float, float);
@@ -318,7 +320,7 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_ON()
 {
     if (kk > 3)
     {
-        std::cout << "\nTheta update - Rblock ON\n";
+        // std::cout << "\nTheta update - Rblock ON\n";
         PhiB_P_PhiB_t = Phiblock * P * Phiblock.transpose();
         PhiB_P_PhiB_t = geninv(Rblock) + PhiB_P_PhiB_t;
         P = P - P * Phiblock.transpose() * geninv(PhiB_P_PhiB_t) * Phiblock * P;
@@ -332,7 +334,7 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_OFF()
 {
     if (kk > 3)
     {
-        std::cout << "\nTheta update - Rblock OFF\n";
+        // std::cout << "\nTheta update - Rblock OFF\n";
         dummy = Phi_filt * P * Phi_filt.transpose();
         Gamma = lambda + dummy(0, 0);
         P = P - P * Phi_filt.transpose() * 1 / Gamma * Phi_filt * P;
