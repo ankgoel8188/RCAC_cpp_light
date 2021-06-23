@@ -1,10 +1,13 @@
 #pragma once
 
-#include "matrix/math.hpp"
-#include <iostream>
+// #include "matrix/math.hpp"
+// #include <iostream>
 
 // using namespace matrix;
 // using namespace std;
+
+// NOTE: This Header is Unneccesary for uses outside of PX4.
+#include <px4_platform_common/defines.h>
 
 /**
  * The parent RCAC class. This class handles all the low level computation of RCAC
@@ -94,7 +97,7 @@ protected:
     matrix::Matrix<float, 1, 1> dummy;
     matrix::Matrix<float, l_Rblock, l_theta> Phiblock;
     matrix::Matrix<float, l_Rblock, l_Rblock> PhiB_P_PhiB_t;
-  
+
     float rcac_int;
 
     //TODO: Initialize lim_int
@@ -109,8 +112,8 @@ template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>::RCAC(float P0_val) : RCAC(P0_val, 1.0, 1.0, 0) {}
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val) :
-    P0(P0_val), lambda(lambda_val), N_nf(N_nf_val), e_fun_num(e_fun_num_val)
+RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val, float lim_int_val) :
+    P0(P0_val), lambda(lambda_val), N_nf(N_nf_val), e_fun_num(e_fun_num_val), lim_int(lim_int_val)
 {
     // Initialize internal RCAC variables
     P = matrix::eye<float, l_theta>() * P0;
@@ -143,7 +146,7 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, float N_nf_val, in
 }
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val) :
+RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val, float lim_int_val) :
     P0(P0_val), lambda(lambda_val), Rblock(Rblock_val), N_nf(N_nf_val), e_fun_num(e_fun_num_val), lim_int(lim_int_val)
 
 {
