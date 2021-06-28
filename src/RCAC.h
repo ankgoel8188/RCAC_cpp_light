@@ -64,6 +64,7 @@ public:
 //     void update_theta();
     void update_integral(const float rcac_error, const float dt);
     void reset_integral();
+    void reset_kk();
 
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in);
 
@@ -403,17 +404,8 @@ float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, 
 template<size_t l_theta, size_t l_Rblock>
 void RCAC<l_theta, l_Rblock>::update_integral(const float rcac_error, const float dt)
 {
-
-    // I term factor: reduce the I gain with increasing rate error.
-    // This counteracts a non-linear effect where the integral builds up quickly upon a large setpoint
-    // change (noticeable in a bounce-back effect after a flip).
-    // The formula leads to a gradual decrease w/o steps, while only affecting the cases where it should:
-    // with the parameter set to 400 degrees, up to 100 deg rate error, i_factor is almost 1 (having no effect),
-    // and up to 200 deg error leads to <25% reduction of I.
-    float i_factor = rcac_error / math::radians(400.f);
-    i_factor = math::max(0.0f, 1.f - i_factor * i_factor);
-
-    float rcac_i = rcac_int + i_factor * rcac_error * dt;
+    // Update Jun 24, 2020 - Removed Anti-windup out of the class. Anti-windup needs to be implemented out of class.
+    float rcac_i = rcac_int + rcac_error * dt;
 
     // do not propagate the result if out of range or invalid
     if (PX4_ISFINITE(rcac_i)) {
@@ -433,3 +425,10 @@ void RCAC<l_theta, l_Rblock>::set_lim_int(float lim_int_in)
 {
     lim_int = 0;
 }
+
+template<size_t l_theta, size_t l_Rblock>
+void RCAC<l_theta, l_Rblock>::reset_kk()
+{
+    kk = 0;
+}
+
