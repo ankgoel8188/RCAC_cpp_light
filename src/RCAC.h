@@ -48,7 +48,7 @@ public:
     float get_rcac_Ru(){return Rblock(1,1);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);}
     float get_rcac_integral() {return rcac_int;};
-
+    float get_rcac_N() {return N_nf;}
 
     void set_lim_int(float lim_int_in);
 
