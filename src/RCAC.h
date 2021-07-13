@@ -27,6 +27,7 @@ class RCAC
 public:
     RCAC();
     RCAC(float P0_val);
+    RCAC(RCACParams RCAC_Parameters_in);
     RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
     RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
 
@@ -69,9 +70,9 @@ public:
     struct RCACInitParams {        
         float lambda;
         float Rz;
-        int ErrorNormMode;
-        matrix::Matrix<float, l_Rblock, l_Rblock> Rblock;
+        int errorNormMode;
         float lim_int;
+        bool Ru_ON;
     }
 
     struct RCACParams {
@@ -192,6 +193,13 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, matrix::Matrix<flo
     Phiblock.setZero();
     PhiB_P_PhiB_t.setZero();
 }
+
+template<size_t l_theta, size_t l_Rblock>
+RCAC<l_theta, l_Rblock>::RCAC(RCACParams RCAC_Parameters_in);
+{
+    _RCAC_Parameters = RCAC_Parameters_in;
+}
+
 
 template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>::RCAC(const RCAC & obj)
