@@ -65,20 +65,20 @@ public:
         float N_nf;
         float Ru;
         float alpha_PID;
-    }
+    };
 
-    struct RCACInitParams {        
+    struct RCACInitParams {
         float lambda;
         float Rz;
         int errorNormMode;
         float lim_int;
         bool Ru_ON;
-    }
+    };
 
     struct RCACParams {
         RCACTuneParams tuneParams;
         RCACInitParams initParams;
-    }
+    };
 
 protected:
     const int nf = 2;
