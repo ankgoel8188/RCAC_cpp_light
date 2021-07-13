@@ -25,9 +25,30 @@ class RCAC
     int e_fun_num;
 
 public:
+    struct RCACTuneParams {
+        float p0            = 0;
+        float N_nf          = -1;
+        float Ru            = 1;
+        float alpha_PID     = 1;
+        float RCAC_EN       = false;
+    };
+
+    struct RCACInitParams {
+        float lambda        = 1;
+        float Rz            = 1;
+        int   errorNormMode = 0;
+        float lim_int       = FLT_MAX;
+        bool  RBlock_EN     = false;
+    };
+
+    struct RCACParams {
+        RCACTuneParams tuneParams;
+        RCACInitParams initParams;
+    };
+
     RCAC();
     RCAC(float P0_val);
-    RCAC(RCACParams RCAC_Parameters_in);
+    RCAC(const RCACParams & RCAC_Parameters_in);
     RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
     RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
 
@@ -59,26 +80,6 @@ public:
     void reset_kk();
 
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in);
-
-    struct RCACTuneParams {
-        float p0;
-        float N_nf;
-        float Ru;
-        float alpha_PID;
-    };
-
-    struct RCACInitParams {
-        float lambda;
-        float Rz;
-        int errorNormMode;
-        float lim_int;
-        bool Ru_ON;
-    };
-
-    struct RCACParams {
-        RCACTuneParams tuneParams;
-        RCACInitParams initParams;
-    };
 
 protected:
     const int nf = 2;
@@ -195,9 +196,12 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val, float lambda_val, matrix::Matrix<flo
 }
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(RCACParams RCAC_Parameters_in);
+RCAC<l_theta, l_Rblock>::RCAC(const RCACParams & RCAC_Parameters_in)
 {
     _RCAC_Parameters = RCAC_Parameters_in;
+    Rblock(0, 0) = RCAC_Parameters_in.tuneParams.Ru;
+    Rblock(1, 1) = RCAC_Parameters_in.initParams.Rz;.
+
 }
 
 
