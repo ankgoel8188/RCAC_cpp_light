@@ -27,12 +27,8 @@ class RCAC
 public:
     RCAC();
     RCAC(float P0_val);
-// <<<<<<< Variable_RCAC_John
     RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
     RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
-// =======
-//     RCAC(float P0_val, float lambda_val, float Rz_val, float Ru_val, float N_nf_val, float lim_int_val = FLT_MAX);
-// >>>>>>> RCAC_v2_dev
 
     ~RCAC() = default;
     RCAC(const RCAC & obj);
@@ -51,22 +47,37 @@ public:
     float get_rcac_N() {return N_nf;}
 
     void set_lim_int(float lim_int_in);
-
-//     void set_RCAC_data(float, float);
-//     void buildRegressor(float zkm1, float zkm1_int, float zkm1_diff);
     void normalize_e();
 
     void filter_data();
     void build_Phiblock();
     void update_theta_Rblock_ON();
     void update_theta_Rblock_OFF();
-//     void build_Rblock();
-//     void update_theta();
     void update_integral(const float rcac_error, const float dt);
     void reset_integral();
     void reset_kk();
 
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in);
+
+    struct RCACTuneParams {
+        float p0;
+        float N_nf;
+        float Ru;
+        float alpha_PID;
+    }
+
+    struct RCACInitParams {        
+        float lambda;
+        float Rz;
+        int ErrorNormMode;
+        matrix::Matrix<float, l_Rblock, l_Rblock> Rblock;
+        float lim_int;
+    }
+
+    struct RCACParams {
+        RCACTuneParams tuneParams;
+        RCACInitParams initParams;
+    }
 
 protected:
     const int nf = 2;
@@ -74,6 +85,8 @@ protected:
     float nu = 1.0;
     int kk;
     bool Rblock_ON;
+
+    RCACParams _RCAC_Parameters;
 
     matrix::Matrix<float, 1, 2> filtNu;         // 1st order filter. Gf = filtNu(0) + filtNu(1)/q
                                                 // In most cases, filtNu(0) = 0 and filtNu(1) = +-1
