@@ -71,7 +71,7 @@ public:
 protected:
     const int nf = 2;
     float mu = 1.0;
-    float nu = 1.0;
+    float nu = 1.1;
     int kk;
     bool Rblock_ON;
 
