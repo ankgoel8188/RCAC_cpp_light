@@ -7,6 +7,8 @@
 // using namespace std;
 
 // NOTE: This Header is Unneccesary for uses outside of PX4.
+
+//TODO: Implement RCAC_EN
 #include <px4_platform_common/defines.h>
 
 /**
@@ -314,9 +316,9 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_OFF()
     {
         // std::cout << "\nTheta update - Rblock OFF\n";
         dummy = Phi_filt * P * Phi_filt.transpose();
-        Gamma = lambda + dummy(0, 0);
+        Gamma = RCACParams.initParams.lambda + dummy(0, 0);
         P = P - P * Phi_filt.transpose() * 1 / Gamma * Phi_filt * P;
-        P = P / lambda;
+        P = P / RCACParams.initParams.lambda;
 
         theta = theta - P * Phi_filt.transpose() * (z_filt * one_matrix + Phi_filt * theta - u_filt);
     }
@@ -361,7 +363,7 @@ void RCAC<l_theta, l_Rblock>::update_integral(const float rcac_error, const floa
 
     // do not propagate the result if out of range or invalid
     if (PX4_ISFINITE(rcac_i)) {
-        rcac_int = math::constrain(rcac_i, -lim_int, lim_int);
+        rcac_int = math::constrain(rcac_i, -RCACParams.initParams.lim_int, RCACParams.initParams.lim_int);
     }
 
 }
