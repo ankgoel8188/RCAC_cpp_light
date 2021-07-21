@@ -1,6 +1,6 @@
 *
 !/**/
 !*.*
-# src/matrix/*
+src/matrix/*
 build/*
 .vscode/*
