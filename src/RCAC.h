@@ -1,9 +1,9 @@
 #pragma once
 
-#include "matrix/math.hpp"
-#include <cfloat>
-#include <cmath>
-#include <algorithm>
+// #include "matrix/math.hpp"
+// #include <cfloat>
+// #include <cmath>
+// #include <algorithm>
 #include "RCACParams.h"
 
 // #include <iostream>
@@ -22,10 +22,6 @@
  *
  * The notation here follows the JGCD 2019 implementation
  */
-
-float clamp(float n, float lower, float upper) {
-  return std::max(lower, std::min(n, upper));
-}
 
 template<size_t l_theta, size_t l_Rblock>
 class RCAC
@@ -350,9 +346,8 @@ void RCAC<l_theta, l_Rblock>::update_integral(const float rcac_error, const floa
     float rcac_i = rcac_int + rcac_error * dt;
 
     // do not propagate the result if out of range or invalid
-    // if (PX4_ISFINITE(rcac_i)) {
-    if (std::isfinite(rcac_i)) {
-        rcac_int = clamp(rcac_i, -_RCACParams.initParams.lim_int, _RCACParams.initParams.lim_int);//math::constrain(rcac_i, -_RCACParams.initParams.lim_int, _RCACParams.initParams.lim_int);
+    if (PX4_ISFINITE(rcac_i)) {
+        rcac_int = math::constrain(rcac_i, -_RCACParams.initParams.lim_int, _RCACParams.initParams.lim_int);
     }
 
 }
