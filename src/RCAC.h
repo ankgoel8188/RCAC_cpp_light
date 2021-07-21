@@ -106,13 +106,13 @@ template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>::RCAC() : RCAC(0.1) {}
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(float P0_val) 
+RCAC<l_theta, l_Rblock>::RCAC(float P0_val)
 {
     init_var_helper();
     Rblock(0, 0) = _RCACParams.tuneParams.Ru;
     Rblock(1, 1) = _RCACParams.initParams.Rz;
     P = matrix::eye<float, l_theta>() * P0_val;
-    filtNu(0,nf-1) = RCAC_Parameters_in.tuneParams.N_nf;
+    filtNu(0,nf-1) = _RCACParams.tuneParams.N_nf;
 }
 
 template<size_t l_theta, size_t l_Rblock>
