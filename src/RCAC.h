@@ -1,4 +1,4 @@
-#pragma once
+// #pragma once
 
 // #include "matrix/math.hpp"
 // #include <cfloat>
@@ -44,10 +44,11 @@ public:
     //TODO: FIX THESE GET FUNCTIONS, NOT FOOLPROOF
     float get_rcac_theta(int i) {return theta(i,0);}
     float get_rcac_P(int i, int j){return P(i, j);};
-    float get_rcac_Ru(){return Rblock(1,1);};
+    // float get_rcac_Ru(){return Rblock(1,1);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);}
     float get_rcac_integral() {return rcac_int;};
-    float get_rcac_N() {return _RCACParams.tuneParams.N_nf;}
+    // float get_rcac_N() {return _RCACParams.tuneParams.N_nf;}
+    const RCACParams & get_rcacParams( return _RCACParams; )
 
     void set_lim_int(float lim_int_in);
     void normalize_e();
@@ -377,3 +378,29 @@ void RCAC<l_theta, l_Rblock>::reset_kk()
     kk = 0;
 }
 
+
+template<size_t l_theta_IO, size_t l_RBlock_IO>
+class RCAC_Public_IO {
+
+	private:
+	RCAC<l_theta_IO, l_RBlock_IO> * RCAC_ptr;
+
+	public:
+    float get_P11() {
+        return RCAC_ptr->get_rcac_P(0, 0);
+    }
+
+    float get_uk() {
+        return RCAC_ptr->get_rcac_uk();
+    }
+
+    float get_theta(size_t i) {
+        return RCAC_ptr->get_rcac_theta(i);
+    }
+
+    size_t get_kk() {
+        return RCAC_ptr->getkk();
+    }
+
+
+};
