@@ -386,6 +386,8 @@ class RCAC_Public_IO {
 	RCAC<l_theta_IO, l_RBlock_IO> * RCAC_ptr;
 
 	public:
+    RCAC_Public_IO(RCAC * RCAC_ptr_in) : RCAC_ptr(RCAC_ptr_in) {}
+
     float get_P11() {
         return RCAC_ptr->get_rcac_P(0, 0);
     }
