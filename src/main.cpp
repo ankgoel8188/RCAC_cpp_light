@@ -14,6 +14,10 @@ int main()
     // int lu = 1;
     // int ly = 1;
     // int lz = ly;
+    RCACParams rcac_params;
+    rcac_params.tuneParams.p0 = 0.1;
+    rcac_params.initParams.RBlock_EN = true;
+
     matrix::Matrix<float, 2, 2> A;
     matrix::Matrix<float, 2, 1> B;
     matrix::Matrix<float, 1, 2> C;
@@ -41,7 +45,7 @@ int main()
     //*************************************************
     
     // RCAC RCAC2;
-    RCAC<3> myRCAC;
+    RCAC<3, 2> myRCAC(rcac_params);
     // myRCAC.set_RCAC_parameters(5,1,2,1);
     // myRCAC.init_RCAC(5,1,2);
 

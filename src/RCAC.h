@@ -1,6 +1,11 @@
 #pragma once
 
-// #include "matrix/math.hpp"
+#include "matrix/math.hpp"
+#include <cfloat>
+#include <cmath>
+#include <algorithm>
+#include "RCACParams.h"
+
 // #include <iostream>
 
 // using namespace matrix;
@@ -9,7 +14,7 @@
 // NOTE: This Header is Unneccesary for uses outside of PX4.
 
 //TODO: Implement RCAC_EN
-#include <px4_platform_common/defines.h>
+// #include <px4_platform_common/defines.h>
 
 /**
  * The parent RCAC class. This class handles all the low level computation of RCAC
@@ -17,31 +22,15 @@
  *
  * The notation here follows the JGCD 2019 implementation
  */
+
+float clamp(float n, float lower, float upper) {
+  return std::max(lower, std::min(n, upper));
+}
+
 template<size_t l_theta, size_t l_Rblock>
 class RCAC
 {
 public:
-    struct RCACTuneParams {
-        float p0            = 0;
-        float N_nf          = -1;
-        float Ru            = 1;
-        float alpha_PID     = 1;
-        float RCAC_EN       = false;
-    };
-
-    struct RCACInitParams {
-        float lambda        = 1;
-        float Rz            = 1;
-        int   errorNormMode = 0;
-        float lim_int       = FLT_MAX;
-        bool  RBlock_EN     = false;
-    };
-
-    struct RCACParams {
-        RCACTuneParams tuneParams;
-        RCACInitParams initParams;
-    };
-
     // RCAC();
     // RCAC(float P0_val);
     RCAC(const RCACParams & RCAC_Parameters_in);
@@ -62,7 +51,7 @@ public:
     float get_rcac_Ru(){return Rblock(1,1);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);}
     float get_rcac_integral() {return rcac_int;};
-    float get_rcac_N() {return N_nf;}
+    float get_rcac_N() {return _RCACParams.tuneParams.N_nf;}
 
     void set_lim_int(float lim_int_in);
     void normalize_e();
@@ -79,11 +68,11 @@ public:
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in);
 
 protected:
+    matrix::Matrix<float, l_Rblock, l_Rblock> Rblock;
     const int nf = 2;
     float mu = 1.0;
     float nu = 1.0;
     int kk;
-    bool Rblock_ON;
 
     RCACParams _RCACParams;
 
@@ -114,7 +103,6 @@ protected:
     float rcac_int;
 
     //TODO: Initialize lim_int
-    float lim_int;
 };
 
 // TEST: Template is not working correctly, so temp fix
@@ -129,8 +117,8 @@ RCAC<l_theta, l_Rblock>::RCAC(const RCACParams & RCAC_Parameters_in) : _RCACPara
 {
     init_var_helper();
     Rblock(0, 0) = RCAC_Parameters_in.tuneParams.Ru;
-    Rblock(1, 1) = RCAC_Parameters_in.initParams.Rz;.
-    P = matrix::eye<float, l_theta>() * RCAC_Parameters_in.tuneParams.P0;
+    Rblock(1, 1) = RCAC_Parameters_in.initParams.Rz;
+    P = matrix::eye<float, l_theta>() * RCAC_Parameters_in.tuneParams.p0;
     filtNu(0,nf-1) = RCAC_Parameters_in.tuneParams.N_nf;
 }
 
@@ -224,7 +212,7 @@ void RCAC<l_theta, l_Rblock>::normalize_e()
     float pi = (float)M_PI;
 
     // std::cout << "\nError normalization Update:\t" << e_fun_num;
-    switch (_RCACParams.initParams.ErrorNormMode)
+    switch (_RCACParams.initParams.errorNormMode)
     {
         case 1:
             z_k = (mu * nu * z_k) / (mu + nu * abs(z_k));
@@ -316,9 +304,9 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_OFF()
     {
         // std::cout << "\nTheta update - Rblock OFF\n";
         dummy = Phi_filt * P * Phi_filt.transpose();
-        Gamma = RCACParams.initParams.lambda + dummy(0, 0);
+        Gamma = _RCACParams.initParams.lambda + dummy(0, 0);
         P = P - P * Phi_filt.transpose() * 1 / Gamma * Phi_filt * P;
-        P = P / RCACParams.initParams.lambda;
+        P = P / _RCACParams.initParams.lambda;
 
         theta = theta - P * Phi_filt.transpose() * (z_filt * one_matrix + Phi_filt * theta - u_filt);
     }
@@ -327,18 +315,18 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_OFF()
 template<size_t l_theta, size_t l_Rblock>
 float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in)
 {
-    u_km1 = u_km1_in;
+    u_km1 = _u_km1_in;
     Phi_k = _phi_in;
     z_k = _z_in;
 
-    if (RCACParams.initParams.ErrorNormMode > 0)
+    if (_RCACParams.initParams.errorNormMode > 0)
     {
         normalize_e();
     }
 
     filter_data();
 
-    if (RCACParams.initParams.RBlock_EN)
+    if (_RCACParams.initParams.RBlock_EN)
     {
         build_Phiblock();
         update_theta_Rblock_ON();
@@ -362,8 +350,9 @@ void RCAC<l_theta, l_Rblock>::update_integral(const float rcac_error, const floa
     float rcac_i = rcac_int + rcac_error * dt;
 
     // do not propagate the result if out of range or invalid
-    if (PX4_ISFINITE(rcac_i)) {
-        rcac_int = math::constrain(rcac_i, -RCACParams.initParams.lim_int, RCACParams.initParams.lim_int);
+    // if (PX4_ISFINITE(rcac_i)) {
+    if (std::isfinite(rcac_i)) {
+        rcac_int = clamp(rcac_i, -_RCACParams.initParams.lim_int, _RCACParams.initParams.lim_int);//math::constrain(rcac_i, -_RCACParams.initParams.lim_int, _RCACParams.initParams.lim_int);
     }
 
 }
@@ -377,7 +366,7 @@ void RCAC<l_theta, l_Rblock>::reset_integral()
 template<size_t l_theta, size_t l_Rblock>
 void RCAC<l_theta, l_Rblock>::set_lim_int(float lim_int_in)
 {
-    lim_int = lim_int_in;
+    _RCACParams.initParams.lim_int = lim_int_in;
 }
 
 template<size_t l_theta, size_t l_Rblock>
