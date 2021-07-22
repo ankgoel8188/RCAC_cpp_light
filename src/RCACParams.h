@@ -26,6 +26,8 @@ struct RCACParams {
 // Contains setters for tunable parameters; Getters for all Parameters
 class RCACParams_IO {
     public:
+
+    RCACParams_IO() : RCACParams_IO(nullptr) {}
     RCACParams_IO(RCACParams * paramsPtr_in) : paramsPtr(paramsPtr_in) {}
 
     // Struct Block Access to the RCAC Params

@@ -13,8 +13,7 @@
 
 // NOTE: This Header is Unneccesary for uses outside of PX4.
 
-//TODO: Implement RCAC_EN
-// #include <px4_platform_common/defines.h>
+#include <px4_platform_common/defines.h>
 
 /**
  * The parent RCAC class. This class handles all the low level computation of RCAC
@@ -319,6 +318,10 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_OFF()
 template<size_t l_theta, size_t l_Rblock>
 float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in)
 {
+    // Check RCAC_EN to see if the RCAC is enabled.
+    if (!_RCACParams.tuneParams.RCAC_EN)
+        return 0;
+
     u_km1 = _u_km1_in;
     Phi_k = _phi_in;
     z_k = _z_in;
@@ -386,6 +389,8 @@ class RCAC_Public_IO {
 	RCAC<l_theta_IO, l_RBlock_IO> * RCAC_ptr;
 
 	public:
+    RCAC_Public_IO() : RCAC_PUblic_IO(nullptr) {}
+
     RCAC_Public_IO(RCAC * RCAC_ptr_in) : RCAC_ptr(RCAC_ptr_in) {}
 
     float get_P11() {
