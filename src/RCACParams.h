@@ -1,12 +1,16 @@
 // #include <cfloat>
-#include <px4_platform_common/defines.h>
+// #include <px4_platform_common/px4_config.h>
+// #include <px4_platform_common/defines.h>
+// #include <px4_platform_common/log.h>
+// #include <px4_platform_common/module.h>
+// #include <px4_platform_common/module_params.h>
 
 struct RCACTuneParams {
     float p0            = 0;
     float N_nf          = 1;
     float Ru            = 1;
     float alpha_PID     = 1;
-    float RCAC_EN       = false;
+    bool  RCAC_EN       = false;
 };
 
 struct RCACInitParams {
@@ -52,32 +56,32 @@ class RCACParams_IO {
     	void set_Ru(float Ru_in)
 	{
 		// if (pitch_Ru_in != rcac_pitch_Ru)
-		PX4_INFO("[RCAC] Ru: %6.4f", (double)Ru_in);
+		// PX4_INFO("[RCAC] Ru: %6.4f", (double)Ru_in);
 		paramsPtr->tuneParams.Ru = Ru_in;
 	}
 
 	void set_P0(float P0_in)
 	{
 		// if (rcac_pitch_P0 != pitch_P0_in)
-		PX4_INFO("[RCAC] P0: %6.4f", (double)P0_in);
+		// PX4_INFO("[RCAC] P0: %6.4f", (double)P0_in);
 		paramsPtr->tuneParams.p0 = P0_in;
 	}
 
 	void set_alpha(float alpha_in)
 	{
-		PX4_INFO("[RCAC] Alpha: %6.4f", (double)alpha_in);
+		// PX4_INFO("[RCAC] Alpha: %6.4f", (double)alpha_in);
 		paramsPtr->tuneParams.alpha_PID = alpha_in;
 	}
 
 	void set_RCAC_EN(bool RCAC_EN_in)
 	{
-		PX4_INFO("[RCAC] RCAC Switch: %s", pitch_SW_in ? "true" : "false");
+		// PX4_INFO("[RCAC] RCAC Switch: %s", pitch_SW_in ? "true" : "false");
 		paramsPtr->tuneParams.RCAC_EN = RCAC_EN_in;
 	}
 
 	void set_N_nf(bool N_nf_in)
 	{
-		PX4_INFO("[RCAC] N_nf: %6.4f", (double)N_nf_in);
+		// PX4_INFO("[RCAC] N_nf: %6.4f", (double)N_nf_in);
 		paramsPtr->tuneParams.N_nf = N_nf_in;
 	}
 
