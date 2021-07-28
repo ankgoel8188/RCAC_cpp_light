@@ -42,12 +42,12 @@ public:
 
     //TODO: FIX THESE GET FUNCTIONS, NOT FOOLPROOF
     float get_rcac_theta(int i) {return theta(i,0);}
-    float get_rcac_P(int i, int j){return P(i, j);};
+    float get_rcac_P(int i, int j){return P(i, j);}
     // float get_rcac_Ru(){return Rblock(1,1);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);}
-    float get_rcac_integral() {return rcac_int;};
+    float get_rcac_integral() {return rcac_int;}
     // float get_rcac_N() {return _RCACParams.tuneParams.N_nf;}
-    const RCACParams & get_rcacParams( return _RCACParams; )
+    const RCACParams & get_rcacParams() { return _RCACParams; }
 
     void set_lim_int(float lim_int_in);
     void normalize_e();
@@ -389,9 +389,9 @@ class RCAC_Public_IO {
 	RCAC<l_theta_IO, l_RBlock_IO> * RCAC_ptr;
 
 	public:
-    RCAC_Public_IO() : RCAC_PUblic_IO(nullptr) {}
+    RCAC_Public_IO() : RCAC_Public_IO(nullptr) {}
 
-    RCAC_Public_IO(RCAC * RCAC_ptr_in) : RCAC_ptr(RCAC_ptr_in) {}
+    RCAC_Public_IO(RCAC<l_theta_IO, l_RBlock_IO> * RCAC_ptr_in) : RCAC_ptr(RCAC_ptr_in) {}
 
     float get_P11() {
         return RCAC_ptr->get_rcac_P(0, 0);
