@@ -46,10 +46,12 @@ public:
     // float get_rcac_Ru(){return Rblock(1,1);};
     float get_rcac_Phi(int i) {return Phi_k(0,i);}
     float get_rcac_integral() {return rcac_int;}
+    bool get_RCAC_EN() {return _RCACParams.tuneParams.RCAC_EN && MASTER_EN;}
     // float get_rcac_N() {return _RCACParams.tuneParams.N_nf;}
     const RCACParams & get_rcacParams() { return _RCACParams; }
 
     void set_lim_int(float lim_int_in);
+    void set_MASTER_EN(bool MASTER_EN_in);
     void normalize_e();
 
     void filter_data();
@@ -97,6 +99,9 @@ protected:
     matrix::Matrix<float, l_Rblock, l_Rblock> PhiB_P_PhiB_t;
 
     float rcac_int;
+
+    // MASTER_EN is an EN signal for the RCAC Class that overrides RCAC_EN inside Params
+    bool MASTER_EN;
 
     //TODO: Initialize lim_int
 };
@@ -318,13 +323,13 @@ void RCAC<l_theta, l_Rblock>::update_theta_Rblock_OFF()
 template<size_t l_theta, size_t l_Rblock>
 float RCAC<l_theta, l_Rblock>::compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in)
 {
-    // Check RCAC_EN to see if the RCAC is enabled.
-    if (!_RCACParams.tuneParams.RCAC_EN)
-        return 0;
-
     u_km1 = _u_km1_in;
     Phi_k = _phi_in;
     z_k = _z_in;
+
+    // Check Param's RCAC_EN and RCAC's MASTER_EN to see if the RCAC is enabled.
+    if (!(_RCACParams.tuneParams.RCAC_EN && MASTER_EN))
+        return 0;
 
     if (_RCACParams.initParams.errorNormMode > 0)
     {
@@ -376,6 +381,12 @@ void RCAC<l_theta, l_Rblock>::set_lim_int(float lim_int_in)
 }
 
 template<size_t l_theta, size_t l_Rblock>
+void RCAC<l_theta, l_Rblock>::set_MASTER_EN(bool MASTER_EN_in)
+{
+    MASTER_EN = MASTER_EN_in;
+}
+
+template<size_t l_theta, size_t l_Rblock>
 void RCAC<l_theta, l_Rblock>::reset_kk()
 {
     kk = 0;
@@ -393,6 +404,10 @@ class RCAC_Public_IO {
 
     RCAC_Public_IO(RCAC<l_theta_IO, l_RBlock_IO> * RCAC_ptr_in) : RCAC_ptr(RCAC_ptr_in) {}
 
+    void set_MASTER_EN(bool MASTER_EN_in) {
+        RCAC_ptr->set_MASTER_EN(MASTER_EN_in);
+    }
+
     float get_P11() {
         return RCAC_ptr->get_rcac_P(0, 0);
     }
@@ -405,8 +420,17 @@ class RCAC_Public_IO {
         return RCAC_ptr->get_rcac_theta(i);
     }
 
+    float get_zk() {
+        return RCAC_ptr->get_rcac_zk();
+    }
+
     size_t get_kk() {
         return RCAC_ptr->getkk();
+    }
+
+    // This is not MASTER_EN
+    bool get_RCAC_EN() {
+        return RCAC_ptr->get_RCAC_EN();
     }
 
 

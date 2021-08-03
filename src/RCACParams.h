@@ -50,6 +50,7 @@ class RCACParams_IO {
 	float get_Ru() { return paramsPtr->tuneParams.Ru; }
 	float get_Rz() { return paramsPtr->initParams.Rz; }
 	float get_P0() { return paramsPtr->tuneParams.p0; }
+	float get_N_nf() { return paramsPtr->tuneParams.N_nf; }
 	float get_alpha() { return paramsPtr->tuneParams.alpha_PID; }
 	bool  get_switch() { return paramsPtr->tuneParams.RCAC_EN; }
 
@@ -79,7 +80,7 @@ class RCACParams_IO {
 		paramsPtr->tuneParams.RCAC_EN = RCAC_EN_in;
 	}
 
-	void set_N_nf(bool N_nf_in)
+	void set_N_nf(float N_nf_in)
 	{
 		// PX4_INFO("[RCAC] N_nf: %6.4f", (double)N_nf_in);
 		paramsPtr->tuneParams.N_nf = N_nf_in;
