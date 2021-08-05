@@ -29,6 +29,7 @@ public:
     RCAC();
     RCAC(float P0_val);
     RCAC(const RCACParams & RCAC_Parameters_in);
+    RCAC(const RCACParams & RCAC_Parameters_in, float lim_int_in);
     // RCAC(float P0_val, float lambda_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
     // RCAC(float P0_val, float lambda_val, matrix::Matrix<float, l_Rblock, l_Rblock> Rblock_val, float N_nf_val, int e_fun_num_val, float lim_int_val = FLT_MAX);
 
@@ -104,6 +105,7 @@ protected:
     bool MASTER_EN;
 
     //TODO: Initialize lim_int
+    float lim_int = FLT_MAX;
 };
 
 // TEST: Template is not working correctly, so temp fix
@@ -121,7 +123,10 @@ RCAC<l_theta, l_Rblock>::RCAC(float P0_val)
 }
 
 template<size_t l_theta, size_t l_Rblock>
-RCAC<l_theta, l_Rblock>::RCAC(const RCACParams & RCAC_Parameters_in) : _RCACParams(RCAC_Parameters_in)
+RCAC<l_theta, l_Rblock>::RCAC(const RCACParams & RCAC_Parameters_in) : RCAC(RCAC_Parameters_in, FLT_MAX) {}
+
+template<size_t l_theta, size_t l_Rblock>
+RCAC<l_theta, l_Rblock>::RCAC(const RCACParams & RCAC_Parameters_in, float lim_int_in) : _RCACParams(RCAC_Parameters_in), lim_int(lim_int_in)
 {
     init_var_helper();
     Rblock(0, 0) = RCAC_Parameters_in.tuneParams.Ru;
@@ -155,6 +160,9 @@ RCAC<l_theta, l_Rblock>::RCAC(const RCAC & obj)
     Phiblock = obj.Phiblock;
     PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
     kk = obj.kk;
+    rcac_int = obj.rcac_int;
+    MASTER_EN = obj.MASTER_EN;
+    lim_int = obj.lim_int;
 }
 
 template<size_t l_theta, size_t l_Rblock>
@@ -181,6 +189,9 @@ RCAC<l_theta, l_Rblock>& RCAC<l_theta, l_Rblock>::operator=(const RCAC & obj)
     Phiblock = obj.Phiblock;
     PhiB_P_PhiB_t = obj.PhiB_P_PhiB_t;
     kk = obj.kk;
+    rcac_int = obj.rcac_int;
+    MASTER_EN = obj.MASTER_EN;
+    lim_int = obj.lim_int;
     return *this;
 }
 
@@ -200,6 +211,9 @@ void RCAC<l_theta, l_Rblock>::init_var_helper()
 
     Gamma = 0;
     Idty_lz = 0;
+
+    rcac_int = 0;
+    MASTER_EN = true;
 
     Phi_k.setZero();
     Phi_filt.setZero();
@@ -363,7 +377,7 @@ void RCAC<l_theta, l_Rblock>::update_integral(const float rcac_error, const floa
 
     // do not propagate the result if out of range or invalid
     if (PX4_ISFINITE(rcac_i)) {
-        rcac_int = math::constrain(rcac_i, -_RCACParams.initParams.lim_int, _RCACParams.initParams.lim_int);
+        rcac_int = math::constrain(rcac_i, -lim_int, lim_int);
     }
 
 }
@@ -377,7 +391,7 @@ void RCAC<l_theta, l_Rblock>::reset_integral()
 template<size_t l_theta, size_t l_Rblock>
 void RCAC<l_theta, l_Rblock>::set_lim_int(float lim_int_in)
 {
-    _RCACParams.initParams.lim_int = lim_int_in;
+    lim_int = lim_int_in;
 }
 
 template<size_t l_theta, size_t l_Rblock>

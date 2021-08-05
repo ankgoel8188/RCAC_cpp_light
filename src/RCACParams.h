@@ -17,7 +17,7 @@ struct RCACInitParams {
     float lambda        = 1;
     float Rz            = 1;
     int   errorNormMode = 0;
-    float lim_int       = FLT_MAX;
+//     float lim_int       = FLT_MAX;
     bool  RBlock_EN     = false;
 };
 
