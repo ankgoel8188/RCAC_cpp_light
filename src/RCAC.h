@@ -116,8 +116,8 @@ template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>::RCAC(float P0_val)
 {
     init_var_helper();
-    Rblock(0, 0) = _RCACParams.tuneParams.Ru;
-    Rblock(1, 1) = _RCACParams.initParams.Rz;
+    Rblock(0, 0) = _RCACParams.initParams.Rz;
+    Rblock(1, 1) = _RCACParams.tuneParams.Ru;
     P = matrix::eye<float, l_theta>() * P0_val;
     filtNu(0,nf-1) = _RCACParams.tuneParams.N_nf;
 }
@@ -129,8 +129,8 @@ template<size_t l_theta, size_t l_Rblock>
 RCAC<l_theta, l_Rblock>::RCAC(const RCACParams & RCAC_Parameters_in, float lim_int_in) : _RCACParams(RCAC_Parameters_in), lim_int(lim_int_in)
 {
     init_var_helper();
-    Rblock(0, 0) = RCAC_Parameters_in.tuneParams.Ru;
-    Rblock(1, 1) = RCAC_Parameters_in.initParams.Rz;
+    Rblock(0, 0) = RCAC_Parameters_in.initParams.Rz;
+    Rblock(1, 1) = RCAC_Parameters_in.tuneParams.Ru;
     P = matrix::eye<float, l_theta>() * RCAC_Parameters_in.tuneParams.p0;
     filtNu(0,nf-1) = RCAC_Parameters_in.tuneParams.N_nf;
 }
@@ -163,6 +163,9 @@ RCAC<l_theta, l_Rblock>::RCAC(const RCAC & obj)
     rcac_int = obj.rcac_int;
     MASTER_EN = obj.MASTER_EN;
     lim_int = obj.lim_int;
+    Rblock = obj.Rblock;
+    nu = obj.nu;
+    mu = obj.mu;
 }
 
 template<size_t l_theta, size_t l_Rblock>
@@ -192,6 +195,9 @@ RCAC<l_theta, l_Rblock>& RCAC<l_theta, l_Rblock>::operator=(const RCAC & obj)
     rcac_int = obj.rcac_int;
     MASTER_EN = obj.MASTER_EN;
     lim_int = obj.lim_int;
+    Rblock = obj.Rblock;
+    nu = obj.nu;
+    mu = obj.mu;
     return *this;
 }
 
@@ -226,6 +232,8 @@ void RCAC<l_theta, l_Rblock>::init_var_helper()
     dummy.setZero();
     Phiblock.setZero();
     PhiB_P_PhiB_t.setZero();
+
+    Rblock.setZero();
 }
 
 template<size_t l_theta, size_t l_Rblock>
