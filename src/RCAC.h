@@ -67,6 +67,7 @@ public:
     void reset_kk();
 
     float compute_uk(float _z_in, matrix::Matrix<float, 1, l_theta> _phi_in, float _u_km1_in);
+    float error_norm(float _error_in);
 
 protected:
     const int nf = 2;
@@ -432,3 +433,32 @@ void RCAC<l_theta, l_Rblock>::reset_kk()
     kk = 0;
 }
 
+template<size_t l_theta, size_t l_Rblock>
+float RCAC<l_theta, l_Rblock>::error_norm(float _error_in)
+{
+    float pi = (float)M_PI;
+    float error_out = _error_in;
+
+    switch (e_fun_num)
+    {
+        case 1:
+            error_out = (mu * nu * _error_in) / (mu + nu * abs(_error_in));
+            break;
+        case 2:
+            error_out = ((2*nu)/pi)*(float)atan((pi*nu*_error_in)/(2*mu));
+            break;
+        case 3:
+            error_out = (mu*nu*_error_in)/(float)sqrt(mu*mu + nu*nu*_error_in*_error_in);
+            break;
+        case 4:
+            error_out = mu*(float)tanh((nu*_error_in)/mu);
+            break;
+        case 5:
+            error_out = mu * (float)erf(((float)sqrt(pi)*nu*_error_in)/(2*mu));
+            break;
+        default:
+            break;
+    }
+
+    return error_out;
+}
