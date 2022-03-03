@@ -434,6 +434,10 @@ class RCAC_Public_IO {
         return RCAC_ptr->get_rcac_P(0, 0);
     }
 
+    float get_Pij(int i,int j) {
+        return RCAC_ptr->get_rcac_P(i, j);
+    }
+
     float get_uk() {
         return RCAC_ptr->get_rcac_uk();
     }
